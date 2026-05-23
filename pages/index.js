@@ -58,17 +58,17 @@ export default function FinalCountLanding() {
     setDemoStep(1);
     setChatMessages([{ sender: 'bot', text: scenario.botPrompt }]);
     
-    // Step 2: Guest replies (Slowed down)
+    // Step 2: Guest replies
     setTimeout(() => {
       setDemoStep(2);
       setChatMessages(prev => [...prev, { sender: 'user', text: scenario.userReply }]);
       
-      // Step 3: Bot understands context and replies (Slowed down)
+      // Step 3: Bot understands context and replies
       setTimeout(() => {
         setDemoStep(3);
         setChatMessages(prev => [...prev, { sender: 'bot', text: scenario.botConfirm }]);
         
-        // Step 4: Spreadsheet updates (Slowed down)
+        // Step 4: Spreadsheet updates
         setTimeout(() => {
           setDemoStep(4);
           setSpreadsheetData(scenario.parsed);
@@ -103,23 +103,27 @@ export default function FinalCountLanding() {
         .grid-layout { display: grid; grid-template-columns: 1fr; gap: 60px; margin-top: 60px; }
         @media (min-width: 768px) { .grid-layout { grid-template-columns: 1fr 1fr; } .title { font-size: 64px; } }
         
-        .phone-mock { background-color: #ffffff; border: 12px solid #1a1a1a; border-radius: 40px; height: 620px; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; overflow: hidden; transition: all 0.4s ease; }
+        .phone-mock { background-color: #ffffff; border: 12px solid #1a1a1a; border-radius: 40px; height: 640px; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; overflow: hidden; transition: all 0.4s ease; }
         .phone-mock.active-ring { box-shadow: 0 0 0 6px rgba(191, 168, 143, 0.4), 0 25px 50px -12px rgba(0,0,0,0.25); transform: scale(1.02); }
         
         .sheet-mock { background: white; border-radius: 12px; border: 1px solid #ebdccb; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); transition: all 0.4s ease; }
         .sheet-mock.active-ring { box-shadow: 0 0 0 6px rgba(191, 168, 143, 0.4), 0 20px 25px -5px rgba(0,0,0,0.1); transform: scale(1.02); }
-        .sheet-header { background: #332a22; color: #faf7f2; padding: 16px; font-family: serif; font-size: 14px; display: flex; justify-content: space-between; }
+        .sheet-header { background: #332a22; color: #faf7f2; padding: 16px; font-family: serif; font-size: 14px; display: flex; justify-content: space-between; position: relative; z-index: 20; }
         .table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
         .table th { background: #faf7f2; color: #665a4e; font-size: 11px; text-transform: uppercase; padding: 12px; border-bottom: 1px solid #ebdccb; }
         .table td { padding: 14px 12px; border-bottom: 1px solid #f0eae1; color: #444; }
         
-        .msg-bubble { max-width: 80%; padding: 10px 14px; border-radius: 18px; margin-bottom: 8px; font-size: 14px; line-height: 1.4; word-wrap: break-word; white-space: normal; position: relative; }
+        .msg-bubble { max-width: 80%; padding: 10px 14px; border-radius: 18px; margin-bottom: 8px; font-size: 14px; line-height: 1.4; word-wrap: break-word; white-space: normal; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .msg-bot { background: #E5E5EA; color: #000000; align-self: flex-start; border-bottom-left-radius: 4px; }
         .msg-user { background: #007AFF; color: white; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 4px; }
         
-        .inline-callout { background: #1a1a1a; color: #fff; font-size: 11px; font-weight: bold; padding: 6px 12px; border-radius: 20px; margin-bottom: 8px; animation: pulse-opacity 1.5s infinite; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        /* Spotlight Effect Classes */
+        .spotlight-overlay { position: absolute; inset: 0; background-color: rgba(0, 0, 0, 0.5); z-index: 10; transition: opacity 0.4s ease; pointer-events: none; }
+        .spotlight-active { position: relative; z-index: 20; }
         
-        @keyframes pulse-opacity { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+        .inline-callout { background: #bfa88f; color: #332a22; font-size: 12px; font-weight: 800; padding: 8px 16px; border-radius: 8px; margin-bottom: 8px; animation: pulse-scale 1.5s infinite; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); display: inline-block; border: 2px solid #332a22; }
+        
+        @keyframes pulse-scale { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
         
         .card-pricing { background: #332a22; color: white; border-radius: 16px; padding: 48px; text-align: center; max-width: 450px; margin: 60px auto 0 auto; }
         .btn-cta { background: #332a22; color: white; border: none; padding: 14px 28px; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; transition: background 0.2s; }
@@ -173,8 +177,8 @@ export default function FinalCountLanding() {
               
               <div className={`phone-mock ${demoStep > 0 && demoStep < 4 ? 'active-ring' : ''}`}>
                 
-                {/* iOS Status Bar Area */}
-                <div style={{ position: 'relative', height: '44px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '14px 24px 0 24px', fontSize: '14px', fontWeight: 'bold', zIndex: 20 }}>
+                {/* Physical iOS Status Bar */}
+                <div style={{ position: 'relative', height: '44px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '14px 24px 0 24px', fontSize: '14px', fontWeight: 'bold', zIndex: 20, backgroundColor: '#ffffff' }}>
                   <span>9:41</span>
                   {/* Dynamic Island */}
                   <div style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', width: '90px', height: '28px', backgroundColor: 'black', borderRadius: '20px' }}></div>
@@ -185,54 +189,63 @@ export default function FinalCountLanding() {
                   </div>
                 </div>
 
-                {/* iMessage Header */}
-                <div style={{ borderBottom: '1px solid #E5E5EA', paddingBottom: '12px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-                  
-                  {/* HARD SPACER TO GUARANTEE CLEARANCE FROM DYNAMIC ISLAND */}
-                  <div style={{ height: '16px', width: '100%' }}></div>
-
+                {/* iMessage Header (Perfectly Spaced) */}
+                <div style={{ borderBottom: '1px solid #E5E5EA', paddingBottom: '12px', paddingTop: '4px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', backgroundColor: '#ffffff', zIndex: 20 }}>
                   <div style={{ position: 'absolute', left: '16px', bottom: '22px', color: '#007AFF', fontSize: '24px' }}>⟨</div>
                   <div style={{ width: '45px', height: '45px', backgroundColor: '#bfa88f', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white', fontWeight: 'bold', fontSize: '18px', marginBottom: '4px' }}>FC</div>
                   <div style={{ fontSize: '12px', fontWeight: '600' }}>FinalCount ›</div>
                 </div>
 
-                {/* Chat Area */}
-                <div style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', overflowY: 'auto' }}>
-                  {chatMessages.map((m, i) => (
-                    <div key={i} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                      
-                      {/* Directly Attached Callout Badges */}
-                      {demoStep === 1 && i === 0 && (
-                        <div className="inline-callout" style={{ alignSelf: 'flex-start' }}>
-                          Step 1: Assistant texts the guest ↓
-                        </div>
-                      )}
-                      {demoStep === 2 && i === 1 && (
-                        <div className="inline-callout" style={{ alignSelf: 'flex-end', background: '#007AFF' }}>
-                          Step 2: Guest replies naturally ↓
-                        </div>
-                      )}
-                      {demoStep === 3 && i === 2 && (
-                        <div className="inline-callout" style={{ alignSelf: 'flex-start' }}>
-                          Step 3: AI understands context ↓
-                        </div>
-                      )}
+                {/* Chat Area with Spotlight Overlay */}
+                <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+                  
+                  {/* Spotlight Dimming Overlay */}
+                  {demoStep > 0 && demoStep < 4 && <div className="spotlight-overlay"></div>}
 
-                      <div className={`msg-bubble ${m.sender === 'bot' ? 'msg-bot' : 'msg-user'}`}>
-                        {m.text}
-                      </div>
-                      
-                      {/* Delivered Label */}
-                      {(m.sender === 'user' || (m.sender === 'bot' && demoStep >= 3 && i === chatMessages.length - 1 && m.text !== "Pick a scenario above to start the interactive walkthrough.")) && (
-                        <span style={{ alignSelf: 'flex-end', fontSize: '10px', color: '#8E8E93', marginTop: '2px', marginBottom: '8px', fontWeight: '500' }}>Delivered</span>
-                      )}
-                    </div>
-                  ))}
-                  {demoStep === 1 && chatMessages.length === 1 && <div style={{ color: '#8E8E93', fontSize: '12px', paddingLeft: '4px', marginTop: '8px' }}>Waiting for reply...</div>}
+                  <div style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', zIndex: 1 }}>
+                    {chatMessages.map((m, i) => {
+                      const isActiveStep1 = demoStep === 1 && i === 0;
+                      const isActiveStep2 = demoStep === 2 && i === 1;
+                      const isActiveStep3 = demoStep === 3 && i === 2;
+                      const isAnyActive = isActiveStep1 || isActiveStep2 || isActiveStep3;
+
+                      return (
+                        <div key={i} className={isAnyActive ? 'spotlight-active' : ''} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                          
+                          {/* Dynamic Spotlight Callouts */}
+                          {isActiveStep1 && (
+                            <div className="inline-callout" style={{ alignSelf: 'flex-start' }}>
+                              Step 1: Assistant texts the guest ↓
+                            </div>
+                          )}
+                          {isActiveStep2 && (
+                            <div className="inline-callout" style={{ alignSelf: 'flex-end', background: '#332a22', color: '#ffffff' }}>
+                              Step 2: Guest replies naturally ↓
+                            </div>
+                          )}
+                          {isActiveStep3 && (
+                            <div className="inline-callout" style={{ alignSelf: 'flex-start' }}>
+                              Step 3: AI understands context ↓
+                            </div>
+                          )}
+
+                          <div className={`msg-bubble ${m.sender === 'bot' ? 'msg-bot' : 'msg-user'}`}>
+                            {m.text}
+                          </div>
+                          
+                          {/* Delivered Label */}
+                          {(m.sender === 'user' || (m.sender === 'bot' && demoStep >= 3 && i === chatMessages.length - 1 && m.text !== "Pick a scenario above to start the interactive walkthrough.")) && (
+                            <span style={{ alignSelf: 'flex-end', fontSize: '10px', color: isAnyActive ? '#ffffff' : '#8E8E93', marginTop: '2px', marginBottom: '8px', fontWeight: '500', textShadow: isAnyActive ? '0 1px 3px rgba(0,0,0,0.8)' : 'none' }}>Delivered</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {demoStep === 1 && chatMessages.length === 1 && <div className="spotlight-active" style={{ color: '#ffffff', fontSize: '12px', paddingLeft: '4px', marginTop: '8px', fontStyle: 'italic', textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>Waiting for reply...</div>}
+                  </div>
                 </div>
 
                 {/* iMessage Input */}
-                <div style={{ padding: '12px 16px', borderTop: '1px solid #E5E5EA', display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '24px' }}>
+                <div style={{ padding: '12px 16px', borderTop: '1px solid #E5E5EA', display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '24px', backgroundColor: '#ffffff', zIndex: 20 }}>
                   <div style={{ color: '#007AFF', fontSize: '28px', fontWeight: '300' }}>+</div>
                   <div style={{ flex: 1, border: '1px solid #E5E5EA', borderRadius: '20px', padding: '6px 12px', fontSize: '14px', color: '#8E8E93', display: 'flex', justifyContent: 'space-between' }}>
                     <span>iMessage</span>
@@ -240,7 +253,7 @@ export default function FinalCountLanding() {
                   </div>
                 </div>
                 {/* Home Indicator */}
-                <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', width: '130px', height: '4px', backgroundColor: 'black', borderRadius: '4px' }}></div>
+                <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', width: '130px', height: '4px', backgroundColor: 'black', borderRadius: '4px', zIndex: 20 }}></div>
               </div>
             </div>
 
@@ -250,20 +263,19 @@ export default function FinalCountLanding() {
 
               <div className={`sheet-mock ${demoStep === 4 ? 'active-ring' : ''}`} style={{ position: 'relative' }}>
                 
-                {/* Spreadsheet Callout */}
-                {demoStep === 4 && (
-                   <div className="inline-callout" style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 10 }}>
-                     Step 4: Spreadsheet updates instantly ↓
-                   </div>
-                )}
-
                 <div className="sheet-header">
                   <span>Sarah & Mike — Guest list</span>
                   <span style={{ color: '#bfa88f', fontSize: '12px' }}>● Connected</span>
                 </div>
-                <div style={{ overflowX: 'auto' }}>
-                  <table className="table">
-                    <thead>
+                
+                {/* Spreadsheet Body with Overlay */}
+                <div style={{ overflowX: 'auto', position: 'relative' }}>
+                  
+                  {/* Spotlight Dimming Overlay */}
+                  {demoStep === 4 && <div className="spotlight-overlay"></div>}
+
+                  <table className="table" style={{ position: 'relative', zIndex: 1 }}>
+                    <thead style={{ position: 'relative', zIndex: demoStep === 4 ? 1 : 2 }}>
                       <tr>
                         <th>Guest</th>
                         <th>RSVP</th>
@@ -280,8 +292,18 @@ export default function FinalCountLanding() {
                         <td>No</td>
                         <td>Vegan</td>
                       </tr>
-                      <tr style={{ background: demoStep === 4 ? '#fefcbf' : 'transparent', transition: 'background-color 0.8s ease' }}>
-                        <td style={{ fontWeight: '600', color: '#332a22' }}>{spreadsheetData.name}</td>
+                      
+                      {/* ACTIVE ROW */}
+                      <tr className={demoStep === 4 ? 'spotlight-active' : ''} style={{ background: demoStep === 4 ? '#ffffff' : 'transparent', transition: 'all 0.4s ease', boxShadow: demoStep === 4 ? '0 10px 25px rgba(0,0,0,0.15)' : 'none', borderRadius: '8px' }}>
+                        <td style={{ fontWeight: '600', color: '#332a22', position: 'relative' }}>
+                          {/* Spotlight Callout */}
+                          {demoStep === 4 && (
+                             <div className="inline-callout" style={{ position: 'absolute', top: '-45px', left: '0', zIndex: 30, whiteSpace: 'nowrap' }}>
+                               Step 4: Spreadsheet updates instantly ↓
+                             </div>
+                          )}
+                          {spreadsheetData.name}
+                        </td>
                         <td>
                           <span style={{ 
                             padding: '4px 8px', 
@@ -298,6 +320,7 @@ export default function FinalCountLanding() {
                         <td style={{ fontWeight: '500', color: '#332a22' }}>{spreadsheetData.plusOne}</td>
                         <td style={{ fontWeight: '500', color: '#332a22' }}>{spreadsheetData.dietary}</td>
                       </tr>
+                      
                       <tr style={{ color: '#aaa' }}>
                         <td style={{ fontWeight: '600', color: '#a8a29e' }}>Cousin Marcus</td>
                         <td><span style={{ color: '#78350f', background: '#fef3c7', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', fontSize: '12px' }}>Pending</span></td>
@@ -312,15 +335,15 @@ export default function FinalCountLanding() {
               
               {/* Stat blocks */}
               <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
-                <div style={{ flex: 1, background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #ebdccb', textAlign: 'center' }}>
+                <div style={{ flex: 1, background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #ebdccb', textAlign: 'center', position: 'relative', zIndex: demoStep === 4 ? 20 : 1, boxShadow: demoStep === 4 ? '0 10px 25px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.4s ease' }}>
                   <div style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '1px', color: '#665a4e' }}>CONFIRMED</div>
                   <div style={{ fontSize: '28px', fontFamily: 'serif', color: '#332a22', marginTop: '4px' }}>{demoStep === 4 && spreadsheetData.status === 'Confirmed' ? '1' : '0'}</div>
                 </div>
-                <div style={{ flex: 1, background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #ebdccb', textAlign: 'center' }}>
+                <div style={{ flex: 1, background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #ebdccb', textAlign: 'center', position: 'relative', zIndex: demoStep === 4 ? 20 : 1, boxShadow: demoStep === 4 ? '0 10px 25px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.4s ease' }}>
                   <div style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '1px', color: '#665a4e' }}>PENDING</div>
                   <div style={{ fontSize: '28px', fontFamily: 'serif', color: '#332a22', marginTop: '4px' }}>{demoStep === 4 && spreadsheetData.status !== 'Pending' ? '1' : '2'}</div>
                 </div>
-                <div style={{ flex: 1, background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #ebdccb', textAlign: 'center' }}>
+                <div style={{ flex: 1, background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #ebdccb', textAlign: 'center', position: 'relative', zIndex: demoStep === 4 ? 20 : 1, boxShadow: demoStep === 4 ? '0 10px 25px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.4s ease' }}>
                   <div style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '1px', color: '#665a4e' }}>DECLINED</div>
                   <div style={{ fontSize: '28px', fontFamily: 'serif', color: '#332a22', marginTop: '4px' }}>{demoStep === 4 && spreadsheetData.status === 'Declined' ? '1' : '0'}</div>
                 </div>
