@@ -430,7 +430,7 @@ export default function App() {
   // ── Real Formspree submission ──────────────────────────────────────────────
   // Replace the URL below with your own Formspree endpoint after signing up
   // at formspree.io — it will look like: https://formspree.io/f/xabcdefg
-  const FORMSPREE_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
+  const FORMSPREE_ENDPOINT = "https://formspree.io/f/mvzybaez";
 
   async function handleWaitlistSubmit(e) {
     e.preventDefault();
