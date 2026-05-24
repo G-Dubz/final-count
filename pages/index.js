@@ -205,7 +205,7 @@ function LiveDemo() {
       `}</style>
 
       {/* Scenario buttons */}
-      <div style={{ display:"flex", flexWrap:"wrap", gap:10, justifyContent:"center", marginBottom:32 }}>
+      <div className="demo-btns" style={{ display:"flex", flexWrap:"wrap", gap:10, justifyContent:"center", marginBottom:32 }}>
         {SCENARIOS.map(s => (
           <button key={s.id} className={`d-btn${activeId===s.id?" d-active":""}`} onClick={()=>run(s)} disabled={isRunning}>
             {s.btn}
@@ -214,10 +214,10 @@ function LiveDemo() {
       </div>
 
       {/* Main demo grid — phone constrained to iPhone width, sheet fills remaining space */}
-      <div style={{ display:"grid", gridTemplateColumns:"320px minmax(0,1fr)", gap:48, alignItems:"start" }}>
+      <div className="demo-grid" style={{ display:"grid", gridTemplateColumns:"320px minmax(0,1fr)", gap:48, alignItems:"start" }}>
 
         {/* ── Phone column ── */}
-        <div style={{ position:"relative" }}>
+        <div className="demo-phone-col" style={{ position:"relative" }}>
           <div
             className={isRunning ? phoneFocused ? "d-spotlight-on" : "d-spotlight-dim" : "d-spotlight-idle"}
             style={{ borderRadius:36 }}
@@ -314,7 +314,7 @@ function LiveDemo() {
         </div>
 
         {/* ── Sheet column ── */}
-        <div style={{ position:"relative" }}>
+        <div className="demo-sheet-col" style={{ position:"relative" }}>
           <div
             className={isRunning ? sheetFocused ? "d-spotlight-on" : "d-spotlight-dim" : "d-spotlight-idle"}
             style={{ borderRadius:16 }}
@@ -531,11 +531,75 @@ export default function App() {
         .nav-link:hover::after { width: 100%; }
         .nav-link.active { color: #1a1410; }
         .nav-link.active::after { width: 100%; }
+
+        /* ── Mobile responsive ── */
+        @media (max-width: 768px) {
+          /* Nav — hide text links, keep logo + CTA */
+          .nav-links { display: none !important; }
+          .nav-inner { padding: 0 20px !important; }
+
+          /* Hero — stack vertically */
+          .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; padding: 48px 20px 40px !important; }
+          .hero-phone-wrap { display: none !important; }
+          .hero-text h1 { font-size: 38px !important; }
+
+          /* Stat bar */
+          .stat-grid { grid-template-columns: 1fr !important; gap: 20px !important; padding: 28px 20px !important; }
+
+          /* How it works */
+          .how-section { padding: 60px 20px !important; }
+
+          /* Features grid — single column */
+          .features-grid { grid-template-columns: 1fr !important; }
+          .features-section { padding: 60px 20px !important; }
+
+          /* Demo section */
+          .demo-section { padding: 60px 20px !important; }
+          .demo-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+          .demo-phone-col { max-width: 340px !important; margin: 0 auto !important; width: 100% !important; }
+          .demo-sheet-col { width: 100% !important; }
+
+          /* Demo buttons — wrap nicely */
+          .demo-btns { justify-content: center !important; }
+          .d-btn { font-size: 12px !important; padding: 10px 16px !important; }
+
+          /* Callout boxes — reposition for mobile */
+          .callout-box { position: static !important; transform: none !important; margin-top: 14px !important;
+            width: 100% !important; max-width: 100% !important; }
+          .callout-box::before, .callout-box::after { display: none !important; }
+
+          /* Comparison — stack */
+          .compare-grid { grid-template-columns: 1fr !important; }
+          .compare-section { padding: 60px 20px !important; }
+
+          /* Testimonial */
+          .testimonial-section { padding: 48px 20px !important; }
+
+          /* Pricing — single column, remove scale */
+          .pricing-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+          .pricing-featured { transform: none !important; }
+          .pricing-section { padding: 60px 20px !important; }
+
+          /* FAQ */
+          .faq-section { padding: 60px 20px !important; }
+          .faq-btn { font-size: 16px !important; }
+
+          /* Waitlist */
+          .waitlist-section { padding: 60px 20px !important; }
+
+          /* Footer */
+          .footer-inner { flex-direction: column !important; gap: 12px !important; text-align: center !important; padding: 24px 20px !important; }
+        }
+
+        @media (max-width: 480px) {
+          .hero-text h1 { font-size: 32px !important; }
+          .btn-dark, .btn-outline { padding: 12px 20px !important; font-size: 11px !important; }
+        }
       `}</style>
 
       {/* ── NAV ── */}
       <nav style={{ borderBottom:"1px solid #e0d4c4", padding:"0 40px", position:"sticky", top:0, background:"rgba(250,248,244,.96)", backdropFilter:"blur(8px)", zIndex:100 }}>
-        <div style={{ maxWidth:1120, margin:"0 auto", display:"flex", justifyContent:"space-between", alignItems:"center", height:68 }}>
+        <div className="nav-inner" style={{ maxWidth:1120, margin:"0 auto", display:"flex", justifyContent:"space-between", alignItems:"center", height:68 }}>
           <a
             href="#"
             onClick={e => { e.preventDefault(); window.scrollTo({ top:0, behavior:"smooth" }); }}
@@ -546,7 +610,7 @@ export default function App() {
               Final<span style={{ color:"#c9a97a" }}>Count</span>
             </span>
           </a>
-          <div className="sans" style={{ display:"flex", gap:32, fontSize:13, fontWeight:500, letterSpacing:"0.05em" }}>
+          <div className="nav-links sans" style={{ display:"flex", gap:32, fontSize:13, fontWeight:500, letterSpacing:"0.05em" }}>
             {[["how","How it works"],["demo","Live demo"],["pricing","Pricing"]].map(([id, label]) => (
               <a
                 key={id}
@@ -576,7 +640,8 @@ export default function App() {
       </nav>
 
       {/* ── HERO ── */}
-      <section style={{ maxWidth:1120, margin:"0 auto", padding:"80px 40px 72px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:72, alignItems:"center" }}>
+      <section style={{ maxWidth:1120, margin:"0 auto", padding:"80px 40px 72px" }}>
+        <div className="hero-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:72, alignItems:"center" }}>
         <div className="hero-text">
           <span className="tag" style={{ marginBottom:22, display:"inline-block" }}>Wedding RSVP, Reimagined</span>
           <h1 className="serif" style={{ fontSize:"clamp(42px,5vw,66px)", fontWeight:400, lineHeight:1.08, marginTop:18, marginBottom:22, color:"#1a1410" }}>
@@ -609,7 +674,7 @@ export default function App() {
         </div>
 
         {/* Hero phone */}
-        <div className="hero-phone" style={{ display:"flex", justifyContent:"center" }}>
+        <div className="hero-phone hero-phone-wrap" style={{ display:"flex", justifyContent:"center" }}>
           <div style={{ width:280, background:"#1a1a1c", borderRadius:44, padding:6, boxShadow:"0 28px 60px rgba(0,0,0,.28)" }}>
             <div style={{ background:"black", borderRadius:38, overflow:"hidden", position:"relative" }}>
               <div style={{ position:"absolute", top:10, left:"50%", transform:"translateX(-50%)", width:90, height:24, background:"black", borderRadius:14, zIndex:10 }}/>
@@ -636,11 +701,12 @@ export default function App() {
             </div>
           </div>
         </div>
+        </div>
       </section>
 
       {/* ── STAT BAR ── */}
       <div style={{ background:"#2a2118", padding:"32px 40px" }}>
-        <div className="sans" style={{ maxWidth:1120, margin:"0 auto", display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16, textAlign:"center" }}>
+        <div className="sans stat-grid" style={{ maxWidth:1120, margin:"0 auto", display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16, textAlign:"center" }}>
           {[["85%","avg. response rate in 4 days"],["0 hrs","manual data entry required"],["100%","guests can use it — no app needed"]].map(([num,label]) => (
             <div key={num}>
               <div className="serif stat-num" style={{ fontSize:42, fontWeight:300, color:"#e8d8c0", lineHeight:1 }}>{num}</div>
@@ -651,7 +717,7 @@ export default function App() {
       </div>
 
       {/* ── HOW IT WORKS ── */}
-      <section id="how" style={{ maxWidth:880, margin:"0 auto", padding:"88px 40px" }}>
+      <section id="how" className="how-section" style={{ maxWidth:880, margin:"0 auto", padding:"88px 40px" }}>
         <div ref={addRef("how")} data-id="how" style={{ opacity: visible["how"] ? 1 : 0, transform: visible["how"] ? "translateY(0)" : "translateY(28px)", transition:"opacity .8s ease, transform .8s cubic-bezier(.16,1,.3,1)" }}>
           <div style={{ textAlign:"center", marginBottom:60 }}>
             <div className="divider"/>
@@ -681,13 +747,13 @@ export default function App() {
       </section>
 
       {/* ── FEATURES ── */}
-      <section style={{ background:"#f7f3ec", borderTop:"1px solid #d8cebf", borderBottom:"1px solid #d8cebf", padding:"80px 40px" }}>
+      <section className="features-section" style={{ background:"#f7f3ec", borderTop:"1px solid #d8cebf", borderBottom:"1px solid #d8cebf", padding:"80px 40px" }}>
         <div style={{ maxWidth:1120, margin:"0 auto" }}>
           <div style={{ textAlign:"center", marginBottom:52 }}>
             <div className="divider"/>
             <h2 className="serif" style={{ fontSize:38, fontWeight:400, color:"#1a1410" }}>Everything you need.<br/><em>Nothing you don't.</em></h2>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
+          <div className="features-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
             {[
               ["Grandmother-proof","Works over native SMS — no apps, no links, no logins. If they can text a friend, they can RSVP."],
               ["Multi-day events","Rehearsal dinner, ceremony, farewell brunch — each event tracked separately in its own column."],
@@ -709,7 +775,7 @@ export default function App() {
       </section>
 
       {/* ── DEMO ── */}
-      <section id="demo" style={{ background:"#f2ead8", borderBottom:"1px solid #d8cebf", padding:"80px 40px" }}>
+      <section id="demo" className="demo-section" style={{ background:"#f2ead8", borderBottom:"1px solid #d8cebf", padding:"80px 40px" }}>
         <div style={{ maxWidth:1120, margin:"0 auto" }}>
           <div style={{ textAlign:"center", marginBottom:44 }}>
             <div className="divider"/>
@@ -723,12 +789,12 @@ export default function App() {
       </section>
 
       {/* ── COMPARISON ── */}
-      <section style={{ maxWidth:900, margin:"0 auto", padding:"88px 40px" }}>
+      <section className="compare-section" style={{ maxWidth:900, margin:"0 auto", padding:"88px 40px" }}>
         <div style={{ textAlign:"center", marginBottom:52 }}>
           <div className="divider"/>
           <h2 className="serif" style={{ fontSize:38, fontWeight:400, color:"#1a1410" }}>Why couples choose us<br/><em>over traditional RSVP tools</em></h2>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:22 }}>
+        <div className="compare-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:22 }}>
           {[
             ["The old way (website links)", false, ["Guests must click a link and navigate a portal","Older guests get confused or forget to go back","You spend weeks chasing non-responses","Messy group chats with scattered updates","Manual data entry into your spreadsheet"]],
             ["FinalCount", true, ["Conversation happens in native SMS / WhatsApp","Zero learning curve — works for every generation","Polite automated follow-ups run themselves","All replies captured and organized centrally","Google Sheet updates automatically in real time"]]
@@ -749,7 +815,7 @@ export default function App() {
       </section>
 
       {/* ── TESTIMONIAL ── */}
-      <div style={{ background:"#f7f3ec", borderTop:"1px solid #d8cebf", borderBottom:"1px solid #d8cebf", padding:"60px 40px", textAlign:"center" }}>
+      <div className="testimonial-section" style={{ background:"#f7f3ec", borderTop:"1px solid #d8cebf", borderBottom:"1px solid #d8cebf", padding:"60px 40px", textAlign:"center" }}>
         <div style={{ maxWidth:660, margin:"0 auto" }}>
           <div style={{ color:"#c9a97a", fontSize:40, lineHeight:1, display:"block", marginBottom:8, fontFamily:"Georgia,serif" }}>❝</div>
           <blockquote className="serif" style={{ fontSize:"clamp(20px,3vw,27px)", fontWeight:300, fontStyle:"italic", lineHeight:1.55, color:"#2a1f14" }}>
@@ -762,13 +828,13 @@ export default function App() {
       </div>
 
       {/* ── PRICING ── */}
-      <section id="pricing" style={{ maxWidth:1100, margin:"0 auto", padding:"88px 40px", textAlign:"center" }}>
+      <section id="pricing" className="pricing-section" style={{ maxWidth:1100, margin:"0 auto", padding:"88px 40px", textAlign:"center" }}>
         <div className="divider"/>
         <span className="tag" style={{ marginBottom:16, display:"inline-block" }}>Transparent pricing</span>
         <h2 className="serif" style={{ fontSize:40, fontWeight:400, marginTop:14, marginBottom:8, color:"#1a1410" }}>One flat fee.<br/><em>Infinite hours saved.</em></h2>
         <p className="sans" style={{ color:"#3d2e1e", fontSize:15, marginBottom:52, lineHeight:1.7 }}>No subscriptions. No per-guest fees. Pay once, use it for your whole wedding.</p>
 
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:20, alignItems:"stretch" }}>
+        <div className="pricing-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:20, alignItems:"stretch" }}>
 
           {/* Tier 1 — Intimate */}
           <div style={{ border:"1.5px solid #c4b8a8", borderRadius:8, overflow:"hidden", display:"flex", flexDirection:"column" }}>
@@ -793,7 +859,7 @@ export default function App() {
           </div>
 
           {/* Tier 2 — The Grand Affair (featured) */}
-          <div style={{ border:"2px solid #2a2118", borderRadius:8, overflow:"hidden", display:"flex", flexDirection:"column", position:"relative", transform:"scale(1.03)", boxShadow:"0 12px 40px rgba(0,0,0,.14)" }}>
+          <div className="pricing-featured" style={{ border:"2px solid #2a2118", borderRadius:8, overflow:"hidden", display:"flex", flexDirection:"column", position:"relative", transform:"scale(1.03)", boxShadow:"0 12px 40px rgba(0,0,0,.14)" }}>
             <div style={{ position:"absolute", top:0, left:0, right:0, background:"#c9a97a", padding:"6px 0", textAlign:"center" }}>
               <span className="sans" style={{ fontSize:10.5, fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase", color:"#1a1410" }}>Most Popular</span>
             </div>
@@ -848,7 +914,7 @@ export default function App() {
       </section>
 
       {/* ── FAQ ── */}
-      <section style={{ background:"#f7f3ec", borderTop:"1px solid #d8cebf", padding:"78px 40px" }}>
+      <section className="faq-section" style={{ background:"#f7f3ec", borderTop:"1px solid #d8cebf", padding:"78px 40px" }}>
         <div style={{ maxWidth:700, margin:"0 auto" }}>
           <div style={{ textAlign:"center", marginBottom:48 }}>
             <div className="divider"/>
@@ -869,7 +935,7 @@ export default function App() {
       </section>
 
       {/* ── WAITLIST ── */}
-      <section id="waitlist" style={{ background:"#2a2118", padding:"88px 40px" }}>
+      <section id="waitlist" className="waitlist-section" style={{ background:"#2a2118", padding:"88px 40px" }}>
         <div style={{ maxWidth:520, margin:"0 auto", textAlign:"center" }}>
           <div style={{ display:"flex", justifyContent:"center", marginBottom:20 }}>
             <LogoMark size={52} dark={true}/>
@@ -920,7 +986,7 @@ export default function App() {
 
       {/* ── FOOTER ── */}
       <footer style={{ background:"#1a1410", borderTop:"1px solid #2e2822", padding:"28px 40px" }}>
-        <div className="sans" style={{ maxWidth:1120, margin:"0 auto", display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:12.5, color:"#b8a890" }}>
+        <div className="sans footer-inner" style={{ maxWidth:1120, margin:"0 auto", display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:12.5, color:"#b8a890" }}>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
             <LogoMark size={28}/>
             <span className="serif" style={{ fontSize:17, color:"#e8d8c0" }}>FinalCount<span style={{ color:"#c9a97a" }}>.</span></span>
