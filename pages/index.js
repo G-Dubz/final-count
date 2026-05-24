@@ -661,6 +661,14 @@ export default function App() {
           >
             Join Waitlist
           </a>
+          <a
+            href="/dashboard"
+            style={{ padding:"10px 22px", fontSize:11, fontFamily:"'DM Sans',sans-serif", fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase", color:"#2a2118", textDecoration:"none", border:"1.5px solid #2a2118", borderRadius:2, transition:"all .2s" }}
+            onMouseEnter={e => { e.currentTarget.style.background="#2a2118"; e.currentTarget.style.color="#faf8f4"; }}
+            onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color="#2a2118"; }}
+          >
+            Log in
+          </a>
         </div>
       </nav>
 
