@@ -54,43 +54,43 @@ export default function FinalCountLanding() {
     setIsRunning(true);
     setActiveScenario(scenario.id);
     
-    // Step 1: Assistant outbound text
+    // Step 1: Outbound Assistant Text
     setDemoStep(1);
     setChatMessages([{ sender: 'bot', text: scenario.botPrompt }]);
     
-    // Step 2: Guest inbound natural response
+    // Step 2: Guest replies naturally
     setTimeout(() => {
       setDemoStep(2);
       setChatMessages(prev => [...prev, { sender: 'user', text: scenario.userReply }]);
       
-      // Step 3: AI parses and replies contextual acknowledgment
+      // Step 3: AI intercepts and responds
       setTimeout(() => {
         setDemoStep(3);
         setChatMessages(prev => [...prev, { sender: 'bot', text: scenario.botConfirm }]);
         
-        // Step 4: Master sheet fields dynamically capture data
+        // Step 4: Spreadsheet Updates Live
         setTimeout(() => {
           setDemoStep(4);
           setSpreadsheetData(scenario.parsed);
           
-          // Clear spotlight states seamlessly
+          // Cool down and clear presentation states
           setTimeout(() => {
             setIsRunning(false);
             setDemoStep(0);
             setActiveScenario(null);
-          }, 5000);
-        }, 4000);
-      }, 4500);
+          }, 6000);
+        }, 4500);
+      }, 5000);
     }, 4500);
   };
 
-  const getStepGuideText = () => {
+  const renderInstructionText = () => {
     switch (demoStep) {
-      case 1: return "✨ STEP 1: FinalCount targets pending profiles with a warm, customized outreach text.";
-      case 2: return "💬 STEP 2: The guest texts back a standard, conversational sentence without visiting any website links.";
-      case 3: return "🧠 STEP 3: Our conversational brain interprets typos or changes and instantly responds with verification.";
-      case 4: return "📊 STEP 4: The data maps perfectly to your workbook matrix, compiling values on the fly!";
-      default: return "Select any real-world edge case scenario button below to fire up the simulator console:";
+      case 1: return "👉 STEP 1: FinalCount checks in automatically via a friendly, personalized SMS prompt.";
+      case 2: return "💬 STEP 2: The guest texts back a messy, standard response without opening any external links.";
+      case 3: return "🧠 STEP 3: The AI parses the exact intent, confirms the multi-event itinerary, and acknowledges the notes.";
+      case 4: return "📊 STEP 4: The structured metrics update across your live master workbook logs instantly!";
+      default: return "Click any premium scenario block below to engage the animated simulator:";
     }
   };
 
@@ -99,36 +99,53 @@ export default function FinalCountLanding() {
       <style>{`
         .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
         .nav { display: flex; justify-content: space-between; align-items: center; padding: 32px 0; border-b: 1px solid #ebdccb; }
-        .hero { text-align: center; padding: 80px 0; }
-        .badge { background: #f2ebd9; color: #bfa88f; font-size: 12px; font-weight: bold; padding: 6px 16px; border-radius: 20px; display: inline-block; text-transform: uppercase; letter-spacing: 2px; }
-        .title { font-family: serif; font-size: 48px; margin: 24px 0; color: #332a22; }
-        .subtitle { color: #665a4e; font-size: 18px; font-weight: 300; max-width: 650px; margin: 0 auto; line-height: 1.6; }
         
-        .demo-box { background: #f0eae1; border: 1px solid #ebdccb; border-radius: 16px; padding: 48px 24px; margin: 40px 0; position: relative; overflow: hidden; }
-        .guide-banner { background: #332a22; color: #faf7f2; padding: 18px 24px; border-radius: 12px; font-family: serif; font-size: 18px; font-weight: 500; text-align: center; margin-bottom: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid #bfa88f; transition: all 0.3s ease; }
-        .guide-banner.active-banner { background: #bfa88f; color: #332a22; font-weight: bold; transform: scale(1.01); }
+        /* Premium CSS Micro-Animations */
+        .hero-lift { animation: heroLift 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .badge-pulse { animation: badgePulse 2s infinite ease-in-out; }
+        
+        @keyframes heroLift {
+          0% { opacity: 0; transform: translateY(30px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes badgePulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(191, 168, 143, 0.4); }
+          50% { transform: scale(1.03); box-shadow: 0 0 0 10px rgba(191, 168, 143, 0); }
+        }
+        @keyframes messageIn {
+          0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .demo-container { background: #f0eae1; border: 1px solid #ebdccb; border-radius: 16px; padding: 48px 24px; margin: 40px 0; position: relative; }
+        
+        /* High-Contrast Standalone Walkthrough Instruction Banner */
+        .instruction-banner { background: #332a22; color: #faf7f2; padding: 20px 24px; border-radius: 12px; font-family: serif; font-size: 18px; font-weight: 500; text-align: center; margin-bottom: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid #bfa88f; transition: all 0.4s ease; }
+        .instruction-banner.active-mode { background: #bfa88f; color: #332a22; font-weight: bold; box-shadow: 0 0 0 4px rgba(51,42,34,0.1); }
 
         .btn-preset { background: #ffffff; color: #332a22; border: 2px solid #bfa88f; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin: 6px; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .btn-preset:hover:not(:disabled) { background: #332a22; color: #ffffff; border-color: #332a22; }
         .btn-preset.active { background: #332a22; color: #ffffff; border-color: #332a22; }
-        .btn-preset:disabled:not(.active) { opacity: 0.4; background: #faf7f2; border-color: #ebdccb; color: #999; cursor: not-allowed; }
+        .btn-preset:disabled:not(.active) { opacity: 0.35; background: #faf7f2; border-color: #ebdccb; color: #aaa; cursor: not-allowed; }
 
         .grid-layout { display: grid; grid-template-columns: 1fr; gap: 40px; margin-top: 40px; position: relative; }
-        @media (min-width: 768px) { .grid-layout { grid-template-columns: 1fr 1fr; } .title { font-size: 64px; } }
+        @media (min-width: 768px) { .grid-layout { grid-template-columns: 1fr 1fr; } }
         
-        /* Master Curtain Spotlight Elements */
-        .spotlight-curtain { position: absolute; inset: -48px -24px; background-color: rgba(26, 21, 17, 0.65); z-index: 10; transition: opacity 0.4s ease; pointer-events: none; }
-        .isolate-phone { position: relative; z-index: ${isRunning && demoStep < 4 ? '20' : '1'}; background: #ffffff; border-radius: 40px; transition: all 0.4s ease; }
-        .isolate-sheet { position: relative; z-index: ${isRunning && demoStep === 4 ? '20' : '1'}; transition: all 0.4s ease; }
+        /* Flawless Inverted Spotlight Masks */
+        .spotlight-mask { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .spotlight-dimmed { opacity: 0.25; filter: blur(1px); transform: scale(0.99); }
+        .spotlight-focused { opacity: 1; filter: none; transform: scale(1.01); }
+        .focus-aura { box-shadow: 0 0 0 6px rgba(191, 168, 143, 0.5), 0 25px 60px rgba(0,0,0,0.2) !important; }
 
-        .phone-mock { border: 12px solid #1a1a1a; border-radius: 40px; height: 600px; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; background: #ffffff; }
-        .sheet-mock { background: white; border-radius: 12px; border: 1px solid #ebdccb; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .phone-mock { background-color: #ffffff; border: 12px solid #1a1a1a; border-radius: 40px; height: 600px; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); overflow: hidden; position: relative; }
+        .sheet-mock { background: white; border-radius: 12px; border: 1px solid #ebdccb; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.08); }
         .sheet-header { background: #332a22; color: #faf7f2; padding: 16px; font-family: serif; font-size: 14px; display: flex; justify-content: space-between; }
         
         .table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
         .table th { background: #faf7f2; color: #665a4e; font-size: 11px; text-transform: uppercase; padding: 12px; border-bottom: 1px solid #ebdccb; }
         .table td { padding: 14px 12px; border-bottom: 1px solid #f0eae1; color: #444; }
         
+        .animated-msg { animation: messageIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .msg-bubble { max-width: 80%; padding: 10px 14px; border-radius: 18px; margin-bottom: 8px; font-size: 14px; line-height: 1.4; word-wrap: break-word; white-space: normal; }
         .msg-bot { background: #E5E5EA; color: #000000; align-self: flex-start; border-bottom-left-radius: 4px; }
         .msg-user { background: #007AFF; color: white; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 4px; }
@@ -140,17 +157,17 @@ export default function FinalCountLanding() {
       `}</style>
 
       <div className="wrapper">
-        {/* Nav Bar */}
+        {/* Top Navbar */}
         <div className="nav">
           <div style={{ fontSize: '24px', fontFamily: 'serif', fontWeight: 'bold' }}>
             FinalCount<span style={{ color: '#bfa88f' }}>.</span>
           </div>
-          <a href="#waitlist"><button className="btn-cta" style={{ padding: '10px 20px' }}>Join Waitlist</button></a>
+          <a href="#waitlist"><button className="btn-cta text-shadow" style={{ padding: '10px 20px' }}>Join Waitlist</button></a>
         </div>
 
-        {/* Hero Banner */}
-        <div className="hero">
-          <div className="badge">The Ultimate Wedding RSVP Solution</div>
+        {/* Hero Section Container */}
+        <div className="hero hero-lift">
+          <div className="badge badge-pulse">The Ultimate Wedding RSVP Solution</div>
           <h1 className="title">Stop chasing RSVPs. Let AI get your final numbers.</h1>
           <p className="subtitle">
             The automated text assistant that chats with your guests, tracks dietary restrictions, maps multi-day events, and updates your spreadsheet automatically.
@@ -160,17 +177,15 @@ export default function FinalCountLanding() {
           </div>
         </div>
 
-        {/* Interactive Workspace Console */}
-        <div id="demo" className="demo-box">
-          {/* Spotlight background mask activated during run loops */}
-          {isRunning && <div className="spotlight-curtain"></div>}
-
-          {/* Dedicated Dynamic Text Banner Guide */}
-          <div className={`guide-banner ${isRunning ? 'active-banner' : ''}`}>
-            {getStepGuideText()}
+        {/* INTERACTIVE DEMO GRAPHIC CONSOLE */}
+        <div id="demo" className="demo-container">
+          
+          {/* Dynamic Extracted Instruction Banner Panel */}
+          <div className={`instruction-banner ${isRunning ? 'active-mode' : ''}`}>
+            {renderInstructionText()}
           </div>
 
-          <div style={{ textAlign: 'center', position: 'relative', zIndex: 20, marginBottom: '24px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <div style={{ maxWidth: '850px', margin: '0 auto' }}>
               {SCENARIOS.map((scenario) => (
                 <button 
@@ -187,15 +202,16 @@ export default function FinalCountLanding() {
 
           <div className="grid-layout">
             
-            {/* PHONE SECTION - ISOLATED HIGHLIGHT */}
-            <div className="isolate-phone">
-              <h4 style={{ margin: '12px 0 16px 0', fontFamily: 'serif', color: isRunning && demoStep < 4 ? '#332a22' : '#665a4e', fontSize: '18px', textAlign: 'center', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 'bold' }}>Guest's Phone Interface</h4>
+            {/* PHONE BLOCK LAYER */}
+            <div className={`spotlight-mask ${isRunning && demoStep < 4 ? 'spotlight-focused' : isRunning ? 'spotlight-dimmed' : ''}`}>
+              <h4 style={{ margin: '0 0 16px 0', fontFamily: 'serif', color: '#665a4e', fontSize: '18px', textAlign: 'center', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 'bold' }}>Guest's Phone</h4>
               
-              <div className="phone-mock">
-                {/* Physical Structural Native Apple Header Elements */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px 12px 24px', fontSize: '14px', fontWeight: 'bold', backgroundColor: '#ffffff', borderBottom: '1px solid #f4f4f5' }}>
+              <div className={`phone-mock ${isRunning && demoStep < 4 ? 'focus-aura' : ''}`}>
+                
+                {/* Fixed, Space-Aware iOS Status Header Bar */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 24px 10px 24px', fontSize: '14px', fontWeight: 'bold', borderBottom: '1px solid #f4f4f5', backgroundColor: '#ffffff', zIndex: 10 }}>
                   <span>9:41</span>
-                  {/* Digital Chassis Island Notch */}
+                  {/* Structural System Notch Frame */}
                   <div style={{ width: '90px', height: '28px', backgroundColor: 'black', borderRadius: '20px' }}></div>
                   <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                     <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M1 9.5H3V11.5H1V9.5ZM5 7.5H7V11.5H5V7.5ZM9 4.5H11V11.5H9V4.5ZM13 1.5H15V11.5H13V1.5Z" fill="black"/></svg>
@@ -204,22 +220,22 @@ export default function FinalCountLanding() {
                   </div>
                 </div>
 
-                {/* iMessage Identity Details Stack */}
-                <div style={{ borderBottom: '1px solid #E5E5EA', paddingBottom: '12px', paddingTop: '10px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', backgroundColor: '#ffffff' }}>
-                  <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#007AFF', fontSize: '24px' }}>⟨</div>
+                {/* Contact Banner Deck */}
+                <div style={{ borderBottom: '1px solid #E5E5EA', paddingBottom: '12px', paddingTop: '8px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#ffffff', zIndex: 5 }}>
+                  <div style={{ position: 'absolute', left: '16px', bottom: '20px', color: '#007AFF', fontSize: '24px', cursor: 'pointer' }}>⟨</div>
                   <div style={{ width: '45px', height: '45px', backgroundColor: '#bfa88f', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white', fontWeight: 'bold', fontSize: '18px', marginBottom: '4px' }}>FC</div>
-                  <div style={{ fontSize: '12px', fontWeight: '600', color: '#000000' }}>FinalCount Assistant ›</div>
+                  <div style={{ fontSize: '12px', fontWeight: '600', color: '#1a1a1a' }}>FinalCount Assistant ›</div>
                 </div>
 
-                {/* Main Instant Chat Flow Wrapper */}
+                {/* Message Body Track List Grid */}
                 <div style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', overflowY: 'auto', backgroundColor: '#ffffff' }}>
                   {chatMessages.map((m, i) => (
-                    <div key={i} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                    <div key={i} className="animated-msg" style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                       <div className={`msg-bubble ${m.sender === 'bot' ? 'msg-bot' : 'msg-user'}`}>
                         {m.text}
                       </div>
                       
-                      {/* Delivery Notification Elements */}
+                      {/* Operational Timestamp Indicators */}
                       {(m.sender === 'user' || (m.sender === 'bot' && demoStep >= 3 && i === chatMessages.length - 1 && m.text.includes("Spreadsheet updated!"))) && (
                         <span style={{ alignSelf: 'flex-end', fontSize: '10px', color: '#8E8E93', marginTop: '2px', marginBottom: '8px', fontWeight: '500' }}>Delivered</span>
                       )}
@@ -227,7 +243,7 @@ export default function FinalCountLanding() {
                   ))}
                 </div>
 
-                {/* Native Layout Footer Entry Field */}
+                {/* Static Input Footer Chassis Area */}
                 <div style={{ padding: '12px 16px', borderTop: '1px solid #E5E5EA', display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '24px', backgroundColor: '#ffffff' }}>
                   <div style={{ color: '#007AFF', fontSize: '28px', fontWeight: '300' }}>+</div>
                   <div style={{ flex: 1, border: '1px solid #E5E5EA', borderRadius: '20px', padding: '6px 12px', fontSize: '14px', color: '#8E8E93', display: 'flex', justifyContent: 'space-between' }}>
@@ -238,35 +254,35 @@ export default function FinalCountLanding() {
               </div>
             </div>
 
-            {/* MASTER SPREADSHEET MATRIX SECTION - ISOLATED HIGHLIGHT */}
-            <div className="isolate-sheet">
-              <h4 style={{ margin: '12px 0 16px 0', fontFamily: 'serif', color: isRunning && demoStep === 4 ? '#332a22' : '#665a4e', fontSize: '18px', textAlign: 'center', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 'bold' }}>Master Workbook Registry</h4>
+            {/* SPREADSHEET LAYER SECTION - ISOLATED HIGHLIGHT */}
+            <div className={`spotlight-mask ${isRunning && demoStep === 4 ? 'spotlight-focused' : isRunning ? 'spotlight-dimmed' : ''}`}>
+              <h4 style={{ margin: '0 0 16px 0', fontFamily: 'serif', color: '#665a4e', fontSize: '18px', textAlign: 'center', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 'bold' }}>Your Spreadsheet</h4>
 
-              <div className="sheet-mock">
+              <div className={`sheet-mock ${isRunning && demoStep === 4 ? 'focus-aura' : ''}`}>
                 <div className="sheet-header">
-                  <span>Sarah & Mike — Guest Workbook Log</span>
-                  <span style={{ color: '#bfa88f', fontSize: '12px', fontWeight: 'bold' }}>● Automated Sync Connection</span>
+                  <span>Sarah & Mike — Live Master Log</span>
+                  <span style={{ color: '#bfa88f', fontSize: '12px', fontWeight: 'bold' }}>● Sync Activated</span>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
                   <table className="table">
                     <thead>
                       <tr>
-                        <th>Guest Profiles</th>
-                        <th>RSVP Ledger</th>
-                        <th>Attendance Allocation</th>
-                        <th>+1 Tag</th>
-                        <th>Dietary Profile</th>
+                        <th>Guest</th>
+                        <th>RSVP Status</th>
+                        <th>Attending</th>
+                        <th>+1</th>
+                        <th>Dietary Note</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr style={{ color: '#bbb' }}>
-                        <td style={{ fontWeight: '600', color: '#999' }}>Aunt Lisa</td>
+                        <td style={{ fontWeight: '600', color: '#aaa' }}>Aunt Lisa</td>
                         <td><span style={{ color: '#15803d', background: '#dcfce7', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', fontSize: '12px' }}>Confirmed</span></td>
                         <td>All events</td>
                         <td>No</td>
                         <td>Vegan</td>
                       </tr>
-                      {/* Active Row Highlight Area triggered strictly at Step 4 */}
+                      {/* Dynamic spreadsheet row highlighting logic */}
                       <tr style={{ background: demoStep === 4 ? '#fffbeb' : 'transparent', borderLeft: demoStep === 4 ? '4px solid #bfa88f' : 'none', transition: 'background-color 0.4s ease' }}>
                         <td style={{ fontWeight: '600', color: '#332a22' }}>{spreadsheetData.name}</td>
                         <td>
@@ -297,18 +313,18 @@ export default function FinalCountLanding() {
                 </div>
               </div>
               
-              {/* Analytic Metrics Log Block */}
+              {/* Live Metric Tracker Pods */}
               <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
-                <div style={{ flex: 1, background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #ebdccb', textAlign: 'center' }}>
+                <div style={{ flex: 1, background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #ebdccb', textAlign: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
                   <div style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '1px', color: '#665a4e' }}>CONFIRMED GUESTS</div>
                   <div style={{ fontSize: '28px', fontFamily: 'serif', color: '#332a22', marginTop: '4px' }}>{demoStep === 4 && spreadsheetData.status === 'Confirmed' ? '2' : '1'}</div>
                 </div>
-                <div style={{ flex: 1, background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #ebdccb', textAlign: 'center' }}>
+                <div style={{ flex: 1, background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #ebdccb', textAlign: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
                   <div style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '1px', color: '#665a4e' }}>PENDING PROFILES</div>
                   <div style={{ fontSize: '28px', fontFamily: 'serif', color: '#332a22', marginTop: '4px' }}>{demoStep === 4 && spreadsheetData.status !== 'Pending' ? '1' : '2'}</div>
                 </div>
-                <div style={{ flex: 1, background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #ebdccb', textAlign: 'center' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '1px', color: '#665a4e' }}>DECLINED LOGS</div>
+                <div style={{ flex: 1, background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #ebdccb', textAlign: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '1px', color: '#665a4e' }}>DECLINED TOTALS</div>
                   <div style={{ fontSize: '28px', fontFamily: 'serif', color: '#332a22', marginTop: '4px' }}>{demoStep === 4 && spreadsheetData.status === 'Declined' ? '1' : '0'}</div>
                 </div>
               </div>
@@ -317,47 +333,47 @@ export default function FinalCountLanding() {
           </div>
         </div>
 
-        {/* Real-Time Transcript Review Dashboard Section */}
+        {/* BACKEND DASHBOARD REVIEW TRANSCRIPT PANEL MODULE */}
         <div style={{ padding: '80px 0', borderTop: '1px solid #ebdccb' }}>
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <div className="badge">100% Visibility</div>
+            <div className="badge">100% Transparency</div>
             <h2 style={{ fontFamily: 'serif', fontSize: '36px', color: '#332a22', marginTop: '16px' }}>Total Transparency. Read Every Reply.</h2>
             <p style={{ color: '#665a4e', fontSize: '18px', maxWidth: '650px', margin: '16px auto 0 auto', lineHeight: '1.6' }}>
-              Want to double-check a dietary restriction or read a sweet note from your family? Your Couple's Dashboard lets you inspect the exact text conversation behind every spreadsheet change.
+              Want to verify an annotation parameters or read an individual guest statement manually? Your custom workspace dashboard archives entire conversational logs instantly.
             </p>
           </div>
 
-          <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #ebdccb', padding: '0', display: 'flex', overflow: 'hidden', height: '400px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)' }}>
-            {/* Dashboard Sidebar Navigation Menu */}
+          <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #ebdccb', padding: '0', display: 'flex', overflow: 'hidden', height: '400px', boxShadow: '0 20px 40px rgba(0,0,0,0.04)' }}>
+            {/* Sidebar Folder Directory Navigation */}
             <div style={{ width: '35%', borderRight: '1px solid #ebdccb', background: '#faf7f2', display: 'flex', flexDirection: 'column' }}>
-               <div style={{ padding: '16px', borderBottom: '1px solid #ebdccb', fontWeight: 'bold', fontSize: '14px', color: '#665a4e', textTransform: 'uppercase', letterSpacing: '1px' }}>Guest Chat Archives</div>
+               <div style={{ padding: '16px', borderBottom: '1px solid #ebdccb', fontWeight: 'bold', fontSize: '14px', color: '#665a4e', textTransform: 'uppercase', letterSpacing: '1px' }}>Guest Message Feeds</div>
                <div style={{ padding: '16px', background: '#fff', borderBottom: '1px solid #ebdccb', borderLeft: '4px solid #332a22', cursor: 'pointer' }}>
                   <div style={{ fontWeight: 'bold', fontSize: '15px', color: '#332a22' }}>Uncle Dave & Aunt Clara</div>
-                  <div style={{ fontSize: '12px', color: '#15803d', marginTop: '6px', fontWeight: '600' }}>● Confirmed Verified</div>
+                  <div style={{ fontSize: '12px', color: '#15803d', marginTop: '6px', fontWeight: '600' }}>● Confirmed Checked</div>
                </div>
                <div style={{ padding: '16px', borderBottom: '1px solid #ebdccb', cursor: 'pointer', opacity: 0.5 }}>
                   <div style={{ fontWeight: 'bold', fontSize: '15px', color: '#332a22' }}>Cousin Marcus</div>
-                  <div style={{ fontSize: '12px', color: '#78350f', marginTop: '6px', fontWeight: '600' }}>● Pending Outbound</div>
+                  <div style={{ fontSize: '12px', color: '#78350f', marginTop: '6px', fontWeight: '600' }}>● Pending Queue</div>
                </div>
             </div>
             
-            {/* Live Message Transcript Panel Box View */}
+            {/* Right Active Conversation Stream Module */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#fff' }}>
-               <div style={{ padding: '16px 24px', borderBottom: '1px solid #ebdccb', display: 'flex', justifycontent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#332a22' }}>Verification Log: Uncle Dave & Aunt Clara</div>
-                  <button className="btn-preset" style={{ margin: 0, padding: '8px 16px', fontSize: '12px' }}>Override RSVP Manually</button>
+               <div style={{ padding: '16px 24px', borderBottom: '1px solid #ebdccb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#332a22' }}>Transcript History: Uncle Dave</div>
+                  <button className="btn-preset" style={{ margin: 0, padding: '8px 16px', fontSize: '12px' }}>Override RSVP State</button>
                </div>
                <div style={{ padding: '24px', flex: 1, overflowY: 'auto', background: '#faf7f2', display: 'flex', flexDirection: 'column' }}>
                   
                   <div style={{ marginBottom: '24px' }}>
-                     <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#665a4e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>FinalCount Outbound Dispatch</span>
+                     <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#665a4e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>FinalCount Engine Dispatched</span>
                      <div style={{ background: '#E5E5EA', padding: '12px 16px', borderRadius: '16px', borderBottomLeftRadius: '4px', display: 'inline-block', marginTop: '6px', fontSize: '14px', color: '#000', maxWidth: '80%', lineHeight: '1.4' }}>
                         Hey Uncle Dave! Finalizing the headcount for Sarah & Mike's wedding. Will you and Aunt Clara make it to the Rehearsal Dinner and Reception?
                      </div>
                   </div>
                   
                   <div style={{ marginBottom: '24px', alignSelf: 'flex-end', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                     <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#665a4e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Raw Guest Message Feed</span>
+                     <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#665a4e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Incoming Guest Response SMS</span>
                      <div style={{ background: '#007AFF', padding: '12px 16px', borderRadius: '16px', borderBottomRightRadius: '4px', display: 'inline-block', marginTop: '6px', fontSize: '14px', color: '#fff', textAlign: 'left', maxWidth: '80%', lineHeight: '1.4' }}>
                         Yes we are coming to both, but Aunt Clara is strictly gluten-free now!
                      </div>
@@ -368,7 +384,7 @@ export default function FinalCountLanding() {
           </div>
         </div>
 
-        {/* Lead Capture Registration Box Module */}
+        {/* Lead Waitlist Form Pod Module */}
         <div id="waitlist" className="card-pricing">
           <span style={{ textTransform: 'uppercase', fontSize: '11px', letterSpacing: '2px', color: '#bfa88f', fontWeight: 'bold' }}>Limited Launch Allocation</span>
           <h3 style={{ fontFamily: 'serif', fontSize: '32px', margin: '12px 0' }}>Join the Private Beta</h3>
