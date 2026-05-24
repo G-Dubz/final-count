@@ -551,25 +551,22 @@ export default function App() {
         .nav-link.active { color: #1a1410; }
         .nav-link.active::after { width: 100%; }
 
-        /* Hide mobile brand block on desktop */
+        /* Hide mobile brand block on desktop — no longer used but kept for safety */
         .hero-mobile-brand { display: none; }
 
-        /* Remove outer section top padding on mobile — the brand block provides it */
         @media (max-width: 768px) {
-          .hero-outer { padding-top: 0 !important; padding-left: 0 !important; padding-right: 0 !important; }
-
-          /* Hide the duplicate stats in hero on mobile — stat bar below shows same info */
-          .hero-stats-desktop { display: none !important; }
           /* Nav — hide text links, keep logo + CTA */
           .nav-links { display: none !important; }
           .nav-inner { padding: 0 20px !important; }
 
-          /* Hero — stack vertically */
-          .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; padding: 32px 20px 40px !important; }
+          /* Hero — full bleed photo, text stacks at bottom, phone hidden */
+          .hero-outer { min-height: 520px !important; }
+          .hero-grid { grid-template-columns: 1fr !important; gap: 0 !important; padding: 48px 24px 52px !important; min-height: 520px !important; align-items: flex-end !important; }
           .hero-phone-wrap { display: none !important; }
-          .hero-text h1 { font-size: 38px !important; }
-          .hero-mobile-brand { display: flex !important; }
-          .hero-mobile-brand-hide { display: none !important; }
+          .hero-text h1 { font-size: 34px !important; }
+          .hero-text p { font-size: 15px !important; max-width: 100% !important; }
+          .hero-stats-desktop { display: none !important; }
+          .hero-mobile-brand { display: none !important; }
 
           /* Stat bar */
           .stat-grid { grid-template-columns: 1fr !important; gap: 20px !important; padding: 28px 20px !important; }
@@ -668,106 +665,103 @@ export default function App() {
       </nav>
 
       {/* ── HERO ── */}
-      <section className="hero-outer" style={{ maxWidth:1120, margin:"0 auto", padding:"80px 40px 72px" }}>
+      {/* Full-bleed cinematic hero — photo background with content overlay */}
+      <section className="hero-outer" style={{ position:"relative", width:"100%", overflow:"hidden", minHeight:620 }}>
 
-        {/* Mobile-only full-bleed wedding hero image — hidden on desktop */}
-        <div className="hero-mobile-brand" style={{
-          display:"none",
-          position:"relative",
-          width:"calc(100% + 40px)",
-          marginLeft:-20,
-          marginRight:-20,
-          marginBottom:36,
-          height:320,
-          overflow:"hidden"
+        {/* Wedding photo */}
+        <img
+          src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=85&auto=format&fit=crop"
+          alt="A couple celebrating their wedding"
+          style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 25%" }}
+        />
+
+        {/* Gradient overlay — left side darker for text readability, right stays lighter */}
+        <div style={{
+          position:"absolute", inset:0,
+          background:"linear-gradient(105deg, rgba(20,14,10,0.82) 0%, rgba(20,14,10,0.60) 45%, rgba(20,14,10,0.25) 100%)"
+        }}/>
+
+        {/* Content layer */}
+        <div className="hero-grid" style={{
+          position:"relative", zIndex:2,
+          maxWidth:1120, margin:"0 auto",
+          padding:"80px 40px 72px",
+          display:"grid",
+          gridTemplateColumns:"1fr 1fr",
+          gap:64,
+          alignItems:"center",
+          minHeight:620
         }}>
-          {/* Wedding photo from Unsplash — free to use */}
-          <img
-            src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80&auto=format&fit=crop"
-            alt="A couple celebrating their wedding"
-            style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 30%" }}
-          />
-          {/* Dark gradient overlay so text is readable */}
-          <div style={{
-            position:"absolute", inset:0,
-            background:"linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(26,20,16,0.72) 100%)"
-          }}/>
-          {/* Centered logo + wordmark over the image */}
-          <div style={{
-            position:"absolute", bottom:28, left:0, right:0,
-            display:"flex", flexDirection:"column", alignItems:"center", gap:10
-          }}>
-            <LogoMark size={52} dark={true}/>
-            <span style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:30, fontWeight:600, color:"#faf8f4", letterSpacing:"0.02em" }}>
-              Final<span style={{ color:"#c9a97a" }}>Count</span>
-            </span>
-            <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:"rgba(255,255,255,0.7)", letterSpacing:"0.14em", textTransform:"uppercase", fontWeight:500 }}>
-              Wedding RSVP Intelligence
-            </span>
-          </div>
-        </div>
 
-        <div className="hero-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:72, alignItems:"center" }}>
-        <div className="hero-text">
-          <span className="tag" style={{ marginBottom:22, display:"inline-block" }}>Wedding RSVP, Reimagined</span>
-          <h1 className="serif" style={{ fontSize:"clamp(42px,5vw,66px)", fontWeight:400, lineHeight:1.08, marginTop:18, marginBottom:22, color:"#1a1410" }}>
-            Stop chasing RSVPs.<br/>
-            <em className="gold-line" style={{ color:"#6b4d1f", display:"inline-block", paddingBottom:6 }}>Let AI get<br/>the final count.</em>
-          </h1>
-          <p className="sans" style={{ fontSize:16, color:"#3d2e1e", lineHeight:1.75, maxWidth:420, marginBottom:36 }}>
-            An intelligent text assistant that has real conversations with your guests, organizes every detail, and syncs everything to a Google Sheet — while you enjoy being engaged.
-          </p>
-          <div style={{ display:"flex", gap:14, flexWrap:"wrap", marginBottom:28 }}>
-            <a
-              href="#demo"
-              className="btn-dark"
-              onClick={e => { e.preventDefault(); document.getElementById("demo")?.scrollIntoView({ behavior:"smooth" }); }}
-            >See it in action</a>
-            <a
-              href="#waitlist"
-              className="btn-outline"
-              onClick={e => { e.preventDefault(); document.getElementById("waitlist")?.scrollIntoView({ behavior:"smooth" }); }}
-            >Join the waitlist</a>
-          </div>
-          {/* Stats — hidden on mobile since they repeat in the stat bar below */}
-          <div className="hero-stats-desktop sans" style={{ display:"flex", gap:24, flexWrap:"wrap" }}>
-            {[["85%","response rate in 4 days"],["0 hrs","manual data entry"],["100%","no app needed"]].map(([n,l]) => (
-              <div key={n}>
-                <div className="serif" style={{ fontSize:28, fontWeight:400, color:"#c9a97a", lineHeight:1 }}>{n}</div>
-                <div style={{ fontSize:11, color:"#6b5c4d", marginTop:3, fontWeight:500, letterSpacing:"0.04em" }}>{l}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+          {/* Left — logo mark + text + CTAs */}
+          <div className="hero-text">
+            {/* Logo mark + wordmark inline */}
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:32 }}>
+              <LogoMark size={44} dark={true}/>
+              <div style={{ width:1, height:36, background:"rgba(201,169,122,0.4)" }}/>
+              <span style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:15, fontWeight:500, color:"rgba(255,255,255,0.75)", letterSpacing:"0.18em", textTransform:"uppercase" }}>
+                Wedding RSVP Intelligence
+              </span>
+            </div>
 
-        {/* Hero phone */}
-        <div className="hero-phone hero-phone-wrap" style={{ display:"flex", justifyContent:"center" }}>
-          <div style={{ width:280, background:"#1a1a1c", borderRadius:44, padding:6, boxShadow:"0 28px 60px rgba(0,0,0,.28)" }}>
-            <div style={{ background:"black", borderRadius:38, overflow:"hidden", position:"relative" }}>
-              <div style={{ position:"absolute", top:10, left:"50%", transform:"translateX(-50%)", width:90, height:24, background:"black", borderRadius:14, zIndex:10 }}/>
-              <div style={{ background:"#f5f5f7", padding:"30px 14px 8px", display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:13, fontWeight:600, color:"black", fontFamily:"-apple-system,sans-serif" }}>
-                <span>9:41</span>
-                <span style={{ fontSize:11 }}>●●●● 📶 87%</span>
-              </div>
-              <div style={{ background:"#f5f5f7", padding:"8px 14px 12px", borderBottom:"0.5px solid #d1d1d6", display:"flex", alignItems:"center", gap:10 }}>
-                <span style={{ fontSize:18, color:"#007aff" }}>‹</span>
-                <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center" }}>
-                  <div style={{ width:34, height:34, borderRadius:"50%", background:"linear-gradient(135deg,#d4b787,#a88860)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:600, color:"white" }}>FC</div>
-                  <div style={{ fontSize:10.5, fontWeight:500, color:"black", marginTop:2, fontFamily:"-apple-system,sans-serif" }}>FinalCount ›</div>
+            <h1 className="serif" style={{ fontSize:"clamp(38px,4.5vw,60px)", fontWeight:400, lineHeight:1.1, marginBottom:20, color:"#faf8f4" }}>
+              Stop chasing RSVPs.<br/>
+              <em style={{ color:"#c9a97a", fontStyle:"italic" }}>Let AI get<br/>the final count.</em>
+            </h1>
+
+            <p className="sans" style={{ fontSize:16, color:"rgba(255,255,255,0.78)", lineHeight:1.75, maxWidth:400, marginBottom:36 }}>
+              An intelligent text assistant that has real conversations with your guests, organizes every detail, and syncs everything to a Google Sheet — while you enjoy being engaged.
+            </p>
+
+            <div style={{ display:"flex", gap:14, flexWrap:"wrap" }}>
+              <a
+                href="#demo"
+                className="btn-dark"
+                style={{ background:"#c9a97a", color:"#1a1410", borderColor:"#c9a97a" }}
+                onClick={e => { e.preventDefault(); document.getElementById("demo")?.scrollIntoView({ behavior:"smooth" }); }}
+              >See it in action</a>
+              <a
+                href="#waitlist"
+                style={{ background:"transparent", color:"#faf8f4", padding:"13px 30px", borderRadius:2, fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase", border:"1.5px solid rgba(255,255,255,0.55)", cursor:"pointer", textDecoration:"none", transition:"all .2s", display:"inline-block" }}
+                onClick={e => { e.preventDefault(); document.getElementById("waitlist")?.scrollIntoView({ behavior:"smooth" }); }}
+                onMouseEnter={e => { e.currentTarget.style.background="rgba(255,255,255,0.12)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.8)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor="rgba(255,255,255,0.55)"; }}
+              >Join the waitlist</a>
+            </div>
+          </div>
+
+          {/* Right — floating phone */}
+          <div className="hero-phone-wrap" style={{ display:"flex", justifyContent:"center", alignItems:"center" }}>
+            <div style={{
+              width:275, background:"#1a1a1c", borderRadius:44, padding:6,
+              boxShadow:"0 32px 72px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,0.06)"
+            }}>
+              <div style={{ background:"black", borderRadius:38, overflow:"hidden", position:"relative" }}>
+                <div style={{ position:"absolute", top:10, left:"50%", transform:"translateX(-50%)", width:88, height:24, background:"black", borderRadius:14, zIndex:10 }}/>
+                <div style={{ background:"#f5f5f7", padding:"30px 14px 8px", display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:13, fontWeight:600, color:"black", fontFamily:"-apple-system,sans-serif" }}>
+                  <span>9:41</span>
+                  <span style={{ fontSize:11 }}>●●●● 📶 87%</span>
                 </div>
-                <span style={{ fontSize:15, color:"#007aff" }}>📞</span>
-              </div>
-              <div style={{ background:"white", padding:"14px 12px", display:"flex", flexDirection:"column", gap:9, minHeight:200 }}>
-                <div style={{ background:"#E9E9EB", color:"#000", borderRadius:18, padding:"9px 13px", fontSize:13, lineHeight:1.45, maxWidth:"78%", fontFamily:"-apple-system,sans-serif" }}>Hey! 👋 I'm helping Sarah & Mike finalize their guest list. Will you and Jan be able to join for the wedding on Saturday?</div>
-                <div style={{ background:"#007AFF", color:"white", borderRadius:18, padding:"9px 13px", fontSize:13, lineHeight:1.45, maxWidth:"78%", marginLeft:"auto", fontFamily:"-apple-system,sans-serif" }}>Yes!! We'll be there for both! Jan is vegan btw!</div>
-                <div style={{ background:"#E9E9EB", color:"#000", borderRadius:18, padding:"9px 13px", fontSize:13, lineHeight:1.45, maxWidth:"78%", fontFamily:"-apple-system,sans-serif" }}>Wonderful! Confirmed you both. Jan's vegan preference is flagged for the caterer. 🌿</div>
-              </div>
-              <div style={{ background:"white", padding:"8px 0 10px", display:"flex", justifyContent:"center" }}>
-                <div style={{ width:100, height:4, background:"black", borderRadius:3 }}/>
+                <div style={{ background:"#f5f5f7", padding:"8px 14px 12px", borderBottom:"0.5px solid #d1d1d6", display:"flex", alignItems:"center", gap:10 }}>
+                  <span style={{ fontSize:18, color:"#007aff" }}>‹</span>
+                  <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center" }}>
+                    <div style={{ width:34, height:34, borderRadius:"50%", background:"linear-gradient(135deg,#d4b787,#a88860)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:600, color:"white" }}>FC</div>
+                    <div style={{ fontSize:10.5, fontWeight:500, color:"black", marginTop:2, fontFamily:"-apple-system,sans-serif" }}>FinalCount ›</div>
+                  </div>
+                  <span style={{ fontSize:15, color:"#007aff" }}>📞</span>
+                </div>
+                <div style={{ background:"white", padding:"14px 12px", display:"flex", flexDirection:"column", gap:9, minHeight:210 }}>
+                  <div style={{ background:"#E9E9EB", color:"#000", borderRadius:18, padding:"9px 13px", fontSize:12.5, lineHeight:1.45, maxWidth:"78%", fontFamily:"-apple-system,sans-serif" }}>Hey! 👋 I'm helping Sarah & Mike finalize their guest list. Will you and Jan be able to join for the wedding on Saturday?</div>
+                  <div style={{ background:"#007AFF", color:"white", borderRadius:18, padding:"9px 13px", fontSize:12.5, lineHeight:1.45, maxWidth:"78%", marginLeft:"auto", fontFamily:"-apple-system,sans-serif" }}>Yes!! We'll be there for both! Jan is vegan btw!</div>
+                  <div style={{ background:"#E9E9EB", color:"#000", borderRadius:18, padding:"9px 13px", fontSize:12.5, lineHeight:1.45, maxWidth:"78%", fontFamily:"-apple-system,sans-serif" }}>Wonderful! Confirmed you both. Jan's vegan preference is flagged for the caterer. 🌿</div>
+                </div>
+                <div style={{ background:"white", padding:"8px 0 10px", display:"flex", justifyContent:"center" }}>
+                  <div style={{ width:100, height:4, background:"black", borderRadius:3 }}/>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+
         </div>
       </section>
 
