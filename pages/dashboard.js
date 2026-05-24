@@ -149,34 +149,38 @@ Your job:
 1. Send a friendly personalized opening message asking if they can attend the wedding
 2. Understand their natural reply — they may confirm, decline, mention plus-ones, dietary needs, or multi-day attendance
 3. Confirm everything back clearly and warmly
-4. After their reply, always end your message with a JSON block on the last line in this exact format (no markdown):
+4. After every one of your replies (including the opening message), always append a JSON block on the very last line in this exact format with no markdown or backticks:
 {"status":"Confirmed","events":"All events","dietary":"None","plusOne":"No"}
 
-Use "Confirmed", "Declined", or "Pending" for status.
+Use "Confirmed", "Declined", or "Pending" for status. Use "None" when a field is not mentioned.
 Keep messages warm, brief, and natural — like a real text. Never sound robotic.
 Address the guest by their first name: ${guest.name.split(" ")[0]}.`;
 
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model:"claude-sonnet-4-20250514",
-        max_tokens:1000,
         system: systemPrompt,
-        messages: conversationHistory
-      })
+        messages: conversationHistory,
+      }),
     });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `API error ${res.status}`);
+    }
+
     const data = await res.json();
     const raw = data.content?.[0]?.text || "";
 
-    // Extract JSON from last line if present
+    // Strip the JSON status block from the display text
     const lines = raw.trim().split("\n");
-    const lastLine = lines[lines.length-1].trim();
+    const lastLine = lines[lines.length - 1].trim();
     let parsed = null;
-    try { parsed = JSON.parse(lastLine); } catch(e) {}
+    try { parsed = JSON.parse(lastLine); } catch {}
 
     const displayText = parsed
-      ? lines.slice(0,-1).join("\n").trim()
+      ? lines.slice(0, -1).join("\n").trim()
       : raw.trim();
 
     return { text: displayText, parsed };
@@ -185,11 +189,15 @@ Address the guest by their first name: ${guest.name.split(" ")[0]}.`;
   async function startConversation() {
     setStarted(true);
     setLoading(true);
-    const history = [{ role:"user", content:`Start the RSVP conversation — send the opening message to ${guest.name}.` }];
-    const { text, parsed } = await callClaude(history);
-    const botMsg = { role:"assistant", content:`${text}` };
-    setMessages([{ side:"bot", text }, botMsg]);
-    if (parsed) setDetectedStatus(parsed);
+    try {
+      const history = [{ role:"user", content:`Start the RSVP conversation — send the opening message to ${guest.name}.` }];
+      const { text, parsed } = await callClaude(history);
+      const botMsg = { role:"assistant", content: text };
+      setMessages([{ side:"bot", text }, botMsg]);
+      if (parsed) setDetectedStatus(parsed);
+    } catch (err) {
+      setMessages([{ side:"bot", text:"Sorry, something went wrong starting the conversation. Please try again." }]);
+    }
     setLoading(false);
     scrollBottom();
     setTimeout(()=>inputRef.current?.focus(),100);
@@ -201,20 +209,14 @@ Address the guest by their first name: ${guest.name.split(" ")[0]}.`;
     setUserInput("");
     setLoading(true);
 
-    // Build history from current messages (alternating bot/user)
+    // Build full conversation history for Claude
     const history = [];
-    // Opening turn
     history.push({ role:"user", content:`Start the RSVP conversation — send the opening message to ${guest.name}.` });
-    // All subsequent turns
     for (let i=0; i<messages.length; i++) {
       const m = messages[i];
-      if (m.side==="bot" && i===0) {
-        history.push({ role:"assistant", content: m.text });
-      } else if (m.side==="user") {
-        history.push({ role:"user", content: m.text });
-      } else if (m.side==="bot") {
-        history.push({ role:"assistant", content: m.text });
-      }
+      if (m.side==="bot" && i===0) history.push({ role:"assistant", content: m.text });
+      else if (m.side==="user") history.push({ role:"user", content: m.text });
+      else if (m.side==="bot") history.push({ role:"assistant", content: m.text });
     }
     history.push({ role:"user", content: userText });
 
@@ -222,9 +224,13 @@ Address the guest by their first name: ${guest.name.split(" ")[0]}.`;
     setMessages(newMsgs);
     scrollBottom();
 
-    const { text, parsed } = await callClaude(history);
-    setMessages([...newMsgs, { side:"bot", text }]);
-    if (parsed) setDetectedStatus(parsed);
+    try {
+      const { text, parsed } = await callClaude(history);
+      setMessages([...newMsgs, { side:"bot", text }]);
+      if (parsed) setDetectedStatus(parsed);
+    } catch (err) {
+      setMessages([...newMsgs, { side:"bot", text:"Sorry, something went wrong. Please try again." }]);
+    }
     setLoading(false);
     scrollBottom();
     setTimeout(()=>inputRef.current?.focus(),100);
