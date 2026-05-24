@@ -556,7 +556,10 @@ export default function App() {
 
         /* Remove outer section top padding on mobile — the brand block provides it */
         @media (max-width: 768px) {
-          .hero-outer { padding-top: 0 !important; }
+          .hero-outer { padding-top: 0 !important; padding-left: 0 !important; padding-right: 0 !important; }
+
+          /* Hide the duplicate stats in hero on mobile — stat bar below shows same info */
+          .hero-stats-desktop { display: none !important; }
           /* Nav — hide text links, keep logo + CTA */
           .nav-links { display: none !important; }
           .nav-inner { padding: 0 20px !important; }
@@ -667,26 +670,41 @@ export default function App() {
       {/* ── HERO ── */}
       <section className="hero-outer" style={{ maxWidth:1120, margin:"0 auto", padding:"80px 40px 72px" }}>
 
-        {/* Mobile-only brand hero block — hidden on desktop */}
+        {/* Mobile-only full-bleed wedding hero image — hidden on desktop */}
         <div className="hero-mobile-brand" style={{
           display:"none",
-          flexDirection:"column",
-          alignItems:"center",
-          textAlign:"center",
-          padding:"40px 20px 32px",
-          borderBottom:"1px solid #e0d4c4",
-          marginBottom:36
+          position:"relative",
+          width:"calc(100% + 40px)",
+          marginLeft:-20,
+          marginRight:-20,
+          marginBottom:36,
+          height:320,
+          overflow:"hidden"
         }}>
-          <LogoMark size={72}/>
-          <div style={{ marginTop:16, display:"flex", alignItems:"center", gap:8 }}>
-            <span style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:32, fontWeight:600, color:"#1a1410", letterSpacing:"0.01em" }}>
+          {/* Wedding photo from Unsplash — free to use */}
+          <img
+            src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80&auto=format&fit=crop"
+            alt="A couple celebrating their wedding"
+            style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 30%" }}
+          />
+          {/* Dark gradient overlay so text is readable */}
+          <div style={{
+            position:"absolute", inset:0,
+            background:"linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(26,20,16,0.72) 100%)"
+          }}/>
+          {/* Centered logo + wordmark over the image */}
+          <div style={{
+            position:"absolute", bottom:28, left:0, right:0,
+            display:"flex", flexDirection:"column", alignItems:"center", gap:10
+          }}>
+            <LogoMark size={52} dark={true}/>
+            <span style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:30, fontWeight:600, color:"#faf8f4", letterSpacing:"0.02em" }}>
               Final<span style={{ color:"#c9a97a" }}>Count</span>
             </span>
+            <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:"rgba(255,255,255,0.7)", letterSpacing:"0.14em", textTransform:"uppercase", fontWeight:500 }}>
+              Wedding RSVP Intelligence
+            </span>
           </div>
-          <div style={{ width:40, height:1.5, background:"#c9a97a", margin:"14px auto 0" }}/>
-          <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:"#8a7a6a", letterSpacing:"0.12em", textTransform:"uppercase", marginTop:12, fontWeight:500 }}>
-            Wedding RSVP Intelligence
-          </p>
         </div>
 
         <div className="hero-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:72, alignItems:"center" }}>
@@ -711,7 +729,8 @@ export default function App() {
               onClick={e => { e.preventDefault(); document.getElementById("waitlist")?.scrollIntoView({ behavior:"smooth" }); }}
             >Join the waitlist</a>
           </div>
-          <div className="sans" style={{ display:"flex", gap:24, flexWrap:"wrap" }}>
+          {/* Stats — hidden on mobile since they repeat in the stat bar below */}
+          <div className="hero-stats-desktop sans" style={{ display:"flex", gap:24, flexWrap:"wrap" }}>
             {[["85%","response rate in 4 days"],["0 hrs","manual data entry"],["100%","no app needed"]].map(([n,l]) => (
               <div key={n}>
                 <div className="serif" style={{ fontSize:28, fontWeight:400, color:"#c9a97a", lineHeight:1 }}>{n}</div>
