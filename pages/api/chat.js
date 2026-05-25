@@ -1,5 +1,5 @@
 // pages/api/chat.js
-// Server-side API route using Google Gemini — free tier available at aistudio.google.com
+// Server-side API route — Anthropic Claude (key stored securely in Vercel env vars)
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -13,50 +13,29 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Convert Anthropic-style messages to Gemini format
-    // Gemini uses "user" / "model" roles and a "parts" array
-    const geminiContents = messages.map(m => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.content }],
-    }));
-
-    // Prepend the system prompt as the first user turn
-    // (Gemini Flash supports systemInstruction natively)
-    const body = {
-      system_instruction: {
-        parts: [{ text: system }],
-      },
-      contents: geminiContents,
-      generationConfig: {
-        maxOutputTokens: 1000,
-        temperature: 0.7,
-      },
-    };
-
-    const apiKey = process.env.GEMINI_API_KEY;
-    const model  = "gemini-2.0-flash";
-    const url    = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-    const response = await fetch(url, {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": process.env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 1000,
+        system,
+        messages,
+      }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Gemini error:", data);
-      return res.status(response.status).json({ error: data.error?.message || "Gemini API error" });
+      console.error("Anthropic error:", data);
+      return res.status(response.status).json({ error: data.error?.message || "API error" });
     }
 
-    // Normalize Gemini response to the same shape the dashboard expects
-    // Dashboard reads: data.content[0].text
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    return res.status(200).json({
-      content: [{ type: "text", text }],
-    });
-
+    return res.status(200).json(data);
   } catch (err) {
     console.error("Server error:", err);
     return res.status(500).json({ error: "Internal server error" });
