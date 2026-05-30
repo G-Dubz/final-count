@@ -758,7 +758,9 @@ function Dashboard({ userEmail, onLogout }) {
   const [lastPoll,setLastPoll]=useState(null);
   const [sendingInvites,setSendingInvites]=useState(false);
   const [sendResults,setSendResults]=useState(null);
+  const [selectedThread,setSelectedThread]=useState(null);
   const fileRef=useRef(null);
+  const threadEndRef=useRef(null);
 
   // Poll inbox every 5 seconds when on Live Conversations tab
   useEffect(()=>{
@@ -856,6 +858,23 @@ function Dashboard({ userEmail, onLogout }) {
   const coupleNames=[wedding.bride,wedding.groom].filter(Boolean).join(" & ")||"Your Wedding";
   const weddingDate=wedding.date?new Date(wedding.date+`T12:00:00`).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}):"";
 
+  // Group inbox messages by phone number into threaded conversations
+  const threads = {};
+  inboxMessages.forEach(m=>{
+    const key=m.from;
+    if (!threads[key]) threads[key]={from:m.from,guestName:m.guestName||m.from,messages:[],latestStatus:null,lastTime:m.timestamp};
+    threads[key].messages.push({side:"user",text:m.message,time:m.timestamp});
+    threads[key].messages.push({side:"bot", text:m.reply,  time:m.timestamp});
+    if (m.parsedStatus) threads[key].latestStatus=m.parsedStatus;
+  });
+  Object.values(threads).forEach(t=>{ t.messages.sort((a,b)=>new Date(a.time)-new Date(b.time)); });
+  const threadList=Object.values(threads).sort((a,b)=>new Date(b.lastTime)-new Date(a.lastTime));
+  const activeThread=selectedThread?threads[selectedThread]:(threadList[0]||null);
+
+  // Auto-scroll thread to bottom when new messages arrive
+  useEffect(()=>{
+    if (threadEndRef.current) threadEndRef.current.scrollIntoView({behavior:"smooth"});
+  },[activeThread?.messages?.length]);
   return (
     <div style={{ minHeight:"100vh",background:"#f5f1eb",fontFamily:"'DM Sans',sans-serif",display:"flex",flexDirection:"column" }}>
       <style>{`
@@ -1078,67 +1097,159 @@ function Dashboard({ userEmail, onLogout }) {
                 <div style={{ fontSize:32,marginBottom:14 }}>📡</div>
                 <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:24,color:C.text,marginBottom:10 }}>Twilio not connected yet</div>
                 <p style={{ fontFamily:"'DM Sans',sans-serif",fontSize:14,color:C.textLight,lineHeight:1.7,maxWidth:520,margin:"0 auto 24px" }}>
-                  To receive real guest replies here, add your Twilio credentials to Vercel and point your Twilio webhook at <code style={{ background:C.creamMid,padding:"2px 8px",borderRadius:3,fontSize:13 }}>https://getfinalcount.com/api/sms-webhook</code>. Then guest replies will appear here in real time.
+                  To receive real guest replies here, add your Twilio credentials to Vercel and point your Twilio webhook at <code style={{ background:C.creamMid,padding:"2px 8px",borderRadius:3,fontSize:13 }}>https://getfinalcount.com/api/sms-webhook</code>.
                 </p>
-                <div style={{ background:C.creamMid,border:`1px solid ${C.creamBorder}`,borderRadius:8,padding:"20px 24px",maxWidth:520,margin:"0 auto",textAlign:"left" }}>
-                  <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:C.textFaint,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:12 }}>Vercel environment variables needed</div>
-                  {[["TWILIO_ACCOUNT_SID","Your Account SID from twilio.com/console"],["TWILIO_AUTH_TOKEN","Your Auth Token from twilio.com/console"],["TWILIO_PHONE_NUMBER","Your Twilio number e.g. +12025551234"],["KV_REST_API_URL","From Vercel → Storage → Create KV database"],["KV_REST_API_TOKEN","From Vercel → Storage → Create KV database"]].map(([k,v])=>(
-                    <div key={k} style={{ marginBottom:10 }}>
-                      <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12.5,fontWeight:600,color:C.text }}>{k}</div>
-                      <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.textFaint }}>{v}</div>
-                    </div>
-                  ))}
-                </div>
               </div>
             ) : inboxMessages.length===0 ? (
               <div className="db-card" style={{ padding:"56px 32px",textAlign:"center" }}>
                 <div style={{ fontSize:28,marginBottom:12 }}>🟢</div>
                 <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:22,color:C.text,marginBottom:8 }}>Connected — waiting for replies</div>
                 <p style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13.5,color:C.textLight,lineHeight:1.65 }}>
-                  This page polls every 5 seconds. When a guest replies to an RSVP text, their message and the AI response will appear here automatically.
+                  When a guest replies to an RSVP text, their full conversation thread will appear here automatically.
                 </p>
                 <div style={{ display:"inline-flex",alignItems:"center",gap:8,marginTop:16,fontFamily:"'DM Sans',sans-serif",fontSize:12.5,color:C.textFaint }}>
-                  <div style={{ width:8,height:8,borderRadius:"50%",background:C.green,animation:"blink 1.5s infinite" }}/>
+                  <div style={{ width:8,height:8,borderRadius:"50%",background:C.green,animation:"pulse 1.5s infinite" }}/>
                   Live · checking every 5 seconds
                 </div>
               </div>
             ) : (
-              <div style={{ display:"flex",flexDirection:"column",gap:12 }}>
-                <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4 }}>
-                  <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.textLight }}>{inboxMessages.length} conversation{inboxMessages.length!==1?"s":""} · live feed</div>
-                  <div style={{ display:"inline-flex",alignItems:"center",gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.green,fontWeight:500 }}>
-                    <div style={{ width:7,height:7,borderRadius:"50%",background:C.green }}/>
-                    Live · updating automatically
+              <div style={{ display:"flex",height:620,background:"white",border:`1px solid ${C.creamBorder}`,borderRadius:12,overflow:"hidden",boxShadow:"0 4px 20px rgba(0,0,0,.06)" }}>
+
+                {/* ── Contact sidebar ── */}
+                <div style={{ width:280,borderRight:`1px solid ${C.creamBorder}`,display:"flex",flexDirection:"column",flexShrink:0 }}>
+                  {/* Sidebar header */}
+                  <div style={{ padding:"16px 18px",borderBottom:`1px solid ${C.creamBorder}`,background:C.creamMid }}>
+                    <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,color:C.textFaint,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:2 }}>Conversations</div>
+                    <div style={{ display:"flex",alignItems:"center",gap:6,marginTop:4 }}>
+                      <div style={{ width:6,height:6,borderRadius:"50%",background:C.green }}/>
+                      <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11.5,color:C.green,fontWeight:500 }}>Live · auto-updating</span>
+                    </div>
+                  </div>
+                  {/* Thread list */}
+                  <div style={{ flex:1,overflowY:"auto" }}>
+                    {threadList.map(t=>{
+                      const isActive = (selectedThread||threadList[0]?.from)===t.from;
+                      const lastMsg  = t.messages[t.messages.length-1];
+                      const initials = t.guestName.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+                      return (
+                        <button
+                          key={t.from}
+                          onClick={()=>setSelectedThread(t.from)}
+                          style={{ width:"100%",padding:"14px 16px",border:"none",borderBottom:`1px solid ${C.creamBorder}`,cursor:"pointer",textAlign:"left",transition:"background .15s",background:isActive?"#f0ead8":"white",display:"flex",gap:12,alignItems:"flex-start" }}
+                          onMouseEnter={e=>{ if(!isActive) e.currentTarget.style.background=C.creamMid; }}
+                          onMouseLeave={e=>{ if(!isActive) e.currentTarget.style.background="white"; }}
+                        >
+                          {/* Avatar */}
+                          <div style={{ width:40,height:40,borderRadius:"50%",background:isActive?C.espresso:C.creamMid,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:`1.5px solid ${isActive?C.gold:C.creamBorder}` }}>
+                            <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,color:isActive?C.gold:C.textLight }}>{initials}</span>
+                          </div>
+                          <div style={{ flex:1,minWidth:0 }}>
+                            <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3 }}>
+                              <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13.5,fontWeight:600,color:isActive?C.espresso:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:120 }}>{t.guestName}</span>
+                              <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:C.textFaint,flexShrink:0 }}>
+                                {new Date(t.lastTime).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})}
+                              </span>
+                            </div>
+                            <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",gap:4 }}>
+                              <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.textFaint,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1 }}>
+                                {lastMsg?.side==="bot"?"FC: ":""}{lastMsg?.text?.slice(0,40)}{lastMsg?.text?.length>40?"…":""}
+                              </span>
+                              {t.latestStatus&&<StatusPill status={t.latestStatus.status}/>}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
-                {inboxMessages.map((m,i)=>(
-                  <div key={i} className="db-card" style={{ padding:"18px 22px" }}>
-                    <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14,flexWrap:"wrap",gap:8 }}>
-                      <div>
-                        <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:18,fontWeight:500,color:C.text }}>{m.guestName||m.from}</div>
-                        <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11.5,color:C.textFaint,marginTop:2 }}>{m.from} · {new Date(m.timestamp).toLocaleString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div>
+
+                {/* ── Message thread panel ── */}
+                <div style={{ flex:1,display:"flex",flexDirection:"column",minWidth:0 }}>
+                  {activeThread ? (
+                    <>
+                      {/* Thread header — iMessage contact style */}
+                      <div style={{ padding:"12px 20px",borderBottom:`1px solid ${C.creamBorder}`,background:"white",display:"flex",alignItems:"center",gap:14 }}>
+                        <div style={{ width:44,height:44,borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},#a88860)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
+                          <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:700,color:"white" }}>
+                            {activeThread.guestName.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase()}
+                          </span>
+                        </div>
+                        <div style={{ flex:1 }}>
+                          <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:600,color:C.text }}>{activeThread.guestName}</div>
+                          <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.textFaint }}>{activeThread.from}</div>
+                        </div>
+                        {activeThread.latestStatus&&(
+                          <div style={{ display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4 }}>
+                            <StatusPill status={activeThread.latestStatus.status}/>
+                            {activeThread.latestStatus.dietary!=="None"&&<span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11.5,color:C.textFaint }}>🌿 {activeThread.latestStatus.dietary}</span>}
+                            {activeThread.latestStatus.plusOne!=="No"&&<span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11.5,color:C.textFaint }}>+1 confirmed</span>}
+                          </div>
+                        )}
                       </div>
-                      {m.parsedStatus&&<StatusPill status={m.parsedStatus.status}/>}
+
+                      {/* Messages — full thread */}
+                      <div style={{ flex:1,overflowY:"auto",padding:"20px 20px 12px",display:"flex",flexDirection:"column",gap:4,background:"#f5f5f7" }}>
+                        {/* Date stamp at top */}
+                        <div style={{ textAlign:"center",marginBottom:12 }}>
+                          <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11,color:"#8e8e93",background:"rgba(0,0,0,.06)",padding:"3px 10px",borderRadius:10 }}>
+                            {new Date(activeThread.messages[0]?.time).toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}
+                          </span>
+                        </div>
+
+                        {activeThread.messages.map((m,i)=>{
+                          const isUser = m.side==="user";
+                          const prevSide = i>0?activeThread.messages[i-1].side:null;
+                          const nextSide = i<activeThread.messages.length-1?activeThread.messages[i+1].side:null;
+                          const isLast = nextSide!==m.side;
+                          // Show time only when side changes or at end
+                          const showTime = isLast;
+
+                          return (
+                            <div key={i} style={{ display:"flex",flexDirection:"column",alignItems:isUser?"flex-end":"flex-start",marginBottom:prevSide!==m.side?10:2 }}>
+                              {/* Sender label on first message of group */}
+                              {prevSide!==m.side&&(
+                                <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:"#8e8e93",marginBottom:3,marginLeft:isUser?0:4,marginRight:isUser?4:0 }}>
+                                  {isUser?activeThread.guestName:"FinalCount"}
+                                </span>
+                              )}
+                              <div style={{
+                                background: isUser?"#007AFF":"#E9E9EB",
+                                color: isUser?"white":"#000",
+                                borderRadius: isUser
+                                  ? (prevSide===m.side?"18px 18px 4px 18px":"18px 18px 4px 18px")
+                                  : (prevSide===m.side?"18px 18px 18px 4px":"18px 18px 18px 4px"),
+                                padding:"9px 14px",
+                                fontSize:14.5,
+                                lineHeight:1.45,
+                                maxWidth:"72%",
+                                fontFamily:"-apple-system,'SF Pro Text',sans-serif",
+                                whiteSpace:"pre-wrap",
+                                wordBreak:"break-word",
+                              }}>{m.text}</div>
+                              {showTime&&(
+                                <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:10.5,color:"#8e8e93",marginTop:3,marginLeft:isUser?0:4,marginRight:isUser?4:0 }}>
+                                  {new Date(m.time).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                        <div ref={threadEndRef}/>
+                      </div>
+
+                      {/* Read-only input bar — shows it's a real conversation but managed by FinalCount */}
+                      <div style={{ padding:"10px 16px",borderTop:"0.5px solid #d1d1d6",background:"white",display:"flex",alignItems:"center",gap:10 }}>
+                        <div style={{ flex:1,background:"#f5f5f7",borderRadius:20,padding:"9px 16px",fontSize:13.5,color:"#8e8e93",fontFamily:"-apple-system,sans-serif",border:"1px solid #e0e0e0" }}>
+                          FinalCount replies automatically via SMS…
+                        </div>
+                      </div>
+                    </>
+                  ):(
+                    <div style={{ flex:1,display:"flex",alignItems:"center",justifyContent:"center",color:C.textFaint,fontFamily:"'DM Sans',sans-serif",fontSize:14 }}>
+                      Select a conversation
                     </div>
-                    <div style={{ display:"flex",flexDirection:"column",gap:8,background:"#f9f6f0",borderRadius:8,padding:"14px" }}>
-                      <div style={{ display:"flex",gap:10,alignItems:"flex-start" }}>
-                        <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:C.textFaint,letterSpacing:"0.07em",textTransform:"uppercase",paddingTop:2,minWidth:44 }}>Guest</span>
-                        <div style={{ background:"#007AFF",color:"white",borderRadius:"16px 16px 4px 16px",padding:"8px 13px",fontSize:13.5,lineHeight:1.45,fontFamily:"-apple-system,sans-serif",maxWidth:"80%" }}>{m.message}</div>
-                      </div>
-                      <div style={{ display:"flex",gap:10,alignItems:"flex-start" }}>
-                        <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:C.textFaint,letterSpacing:"0.07em",textTransform:"uppercase",paddingTop:2,minWidth:44 }}>FC</span>
-                        <div style={{ background:"#E9E9EB",color:"#000",borderRadius:"16px 16px 16px 4px",padding:"8px 13px",fontSize:13.5,lineHeight:1.45,fontFamily:"-apple-system,sans-serif",maxWidth:"80%" }}>{m.reply}</div>
-                      </div>
-                    </div>
-                    {m.parsedStatus&&(m.parsedStatus.events!=="None"||m.parsedStatus.dietary!=="None"||m.parsedStatus.plusOne!=="No")&&(
-                      <div style={{ display:"flex",gap:12,marginTop:10,flexWrap:"wrap" }}>
-                        {m.parsedStatus.events!=="None"&&<span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.textLight }}>📅 {m.parsedStatus.events}</span>}
-                        {m.parsedStatus.dietary!=="None"&&<span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.textLight }}>🌿 {m.parsedStatus.dietary}</span>}
-                        {m.parsedStatus.plusOne!=="No"&&<span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.textLight }}>+1 {m.parsedStatus.plusOne}</span>}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  )}
+                </div>
               </div>
             )}
           </div>
