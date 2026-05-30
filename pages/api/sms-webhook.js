@@ -3,16 +3,27 @@
 // We parse the reply with Claude, respond to the guest, and store the message.
 
 export default async function handler(req, res) {
+  // Always return valid TwiML so Twilio doesn't retry
+  function twimlOk() {
+    res.setHeader("Content-Type", "text/xml");
+    return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response></Response>`);
+  }
+
   if (req.method !== "POST") {
     return res.status(405).send("Method not allowed");
   }
 
-  const from    = req.body.From;   // guest's phone number
-  const to      = req.body.To;     // our Twilio number
-  const msgBody = req.body.Body;   // what the guest typed
+  // Twilio sends form-encoded data — body should be parsed by Next.js automatically
+  // Log everything so we can debug
+  console.log("SMS webhook hit:", JSON.stringify(req.body));
+
+  const from    = req.body?.From;
+  const to      = req.body?.To;
+  const msgBody = req.body?.Body;
 
   if (!from || !msgBody) {
-    return res.status(400).send("Missing From or Body");
+    console.error("Missing From or Body. Body was:", JSON.stringify(req.body));
+    return twimlOk(); // Return 200 to Twilio even on error so it doesn't retry
   }
 
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -188,12 +199,14 @@ Address the guest by their first name: ${firstName}.`;
     console.error("Twilio send error:", e);
   }
 
-  // Twilio expects a TwiML response — sending empty response is fine since we
-  // already sent the reply programmatically above
-  res.setHeader("Content-Type", "text/xml");
-  return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response></Response>`);
+  // Return valid TwiML — Twilio needs this
+  return twimlOk();
 }
 
 export const config = {
-  api: { bodyParser: { type: "application/x-www-form-urlencoded" } },
+  api: {
+    bodyParser: {
+      sizeLimit: "1mb",
+    },
+  },
 };
