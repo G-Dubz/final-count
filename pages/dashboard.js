@@ -380,32 +380,62 @@ Keep messages short, warm, natural — real SMS style. Never sound robotic. Use 
   );
 }
 
-// ── Send Invites Modal ────────────────────────────────────────────────────────
-function SendInvitesModal({ guests, onClose }) {
+// ── Send Invites Modal (real SMS) ─────────────────────────────────────────────
+function SendInvitesModal({ guests, wedding, onClose }) {
   const pending = guests.filter(g=>g.status==="Pending");
   const [selected,setSelected]=useState(new Set(pending.map(g=>g.id)));
-  const [sent,setSent]=useState(false);
+  const [sending,setSending]=useState(false);
+  const [results,setResults]=useState(null);
+  const [error,setError]=useState("");
+
   function toggle(id) { setSelected(prev=>{ const n=new Set(prev); n.has(id)?n.delete(id):n.add(id); return n; }); }
   function toggleAll() { setSelected(selected.size===guests.length?new Set():new Set(guests.map(g=>g.id))); }
-  function handleSend() { setSent(true); setTimeout(onClose,2400); }
+
+  async function handleSend() {
+    setSending(true); setError("");
+    const toSend = guests.filter(g=>selected.has(g.id));
+    try {
+      const res = await fetch("/api/send-sms", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ guests:toSend, weddingContext:wedding }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error||"Send failed");
+      setResults(data);
+    } catch(e) {
+      setError(e.message);
+    }
+    setSending(false);
+  }
+
   return (
     <div style={{ position:"fixed",inset:0,background:"rgba(20,14,10,.5)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:20,backdropFilter:"blur(3px)" }}>
-      <div style={{ background:"white",borderRadius:14,width:"100%",maxWidth:500,boxShadow:"0 28px 72px rgba(0,0,0,.22)",overflow:"hidden",animation:"simIn .3s cubic-bezier(.16,1,.3,1)" }}>
+      <div style={{ background:"white",borderRadius:14,width:"100%",maxWidth:500,boxShadow:"0 28px 72px rgba(0,0,0,.22)",overflow:"hidden" }}>
         <div style={{ padding:"20px 24px",borderBottom:`1px solid ${C.creamBorder}` }}>
           <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:22,fontWeight:400,color:C.text,marginBottom:3 }}>Send RSVP invites</div>
-          <p style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.textLight }}>Select guests to text. Pending guests are pre-selected.</p>
+          <p style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.textLight }}>Guests with a phone number will receive a personalized SMS. Pending guests are pre-selected.</p>
         </div>
-        {sent?(
-          <div style={{ padding:"44px 24px",textAlign:"center" }}>
-            <div style={{ fontSize:32,marginBottom:10 }}>✅</div>
-            <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:20,color:C.text,marginBottom:6 }}>Invites queued!</div>
-            <p style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.textLight,lineHeight:1.6 }}>
-              {selected.size} message{selected.size!==1?"s":""} queued.<br/>
-              <span style={{ color:C.textFaint,fontSize:12 }}>Live SMS via Twilio — coming in the next build.</span>
-            </p>
+
+        {results ? (
+          <div style={{ padding:"36px 24px",textAlign:"center" }}>
+            <div style={{ fontSize:32,marginBottom:10 }}>{results.failed===0?"✅":"⚠️"}</div>
+            <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:22,color:C.text,marginBottom:10 }}>
+              {results.sent} sent{results.failed>0?`, ${results.failed} failed`:""}
+            </div>
+            <div style={{ display:"flex",flexDirection:"column",gap:6,maxHeight:200,overflowY:"auto",marginBottom:16 }}>
+              {results.results.map((r,i)=>(
+                <div key={i} style={{ display:"flex",justifyContent:"space-between",fontSize:13,padding:"5px 0",borderBottom:`1px solid #f5f0ea`,fontFamily:"'DM Sans',sans-serif" }}>
+                  <span style={{ color:C.text }}>{r.name}</span>
+                  <span style={{ color:r.success?C.green:C.red,fontWeight:500 }}>{r.success?"✓ Sent":r.error}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={onClose} style={{ padding:"10px 28px",background:C.espresso,color:C.cream,border:"none",borderRadius:3,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer" }}>Done</button>
           </div>
-        ):(
+        ) : (
           <>
+            {error&&<div style={{ padding:"10px 24px",background:"#fce8e8",borderBottom:`1px solid ${C.creamBorder}`,fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.red }}>{error}</div>}
             <div style={{ maxHeight:300,overflowY:"auto" }}>
               <div style={{ padding:"9px 24px",borderBottom:`1px solid ${C.creamBorder}`,display:"flex",justifyContent:"space-between",alignItems:"center" }}>
                 <label style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12.5,fontWeight:600,color:C.textLight,display:"flex",alignItems:"center",gap:8,cursor:"pointer" }}>
@@ -414,11 +444,15 @@ function SendInvitesModal({ guests, onClose }) {
                 <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.textFaint }}>{selected.size} selected</span>
               </div>
               {guests.map(g=>(
-                <label key={g.id} style={{ display:"flex",alignItems:"center",gap:14,padding:"11px 24px",borderBottom:`1px solid #f5f0ea`,cursor:"pointer",transition:"background .12s" }} onMouseEnter={e=>e.currentTarget.style.background=C.creamMid} onMouseLeave={e=>e.currentTarget.style.background="white"}>
+                <label key={g.id} style={{ display:"flex",alignItems:"center",gap:14,padding:"10px 24px",borderBottom:`1px solid #f5f0ea`,cursor:"pointer" }}
+                  onMouseEnter={e=>e.currentTarget.style.background=C.creamMid}
+                  onMouseLeave={e=>e.currentTarget.style.background="white"}>
                   <input type="checkbox" checked={selected.has(g.id)} onChange={()=>toggle(g.id)} style={{ width:14,height:14,accentColor:C.espresso,flexShrink:0 }}/>
                   <div style={{ flex:1 }}>
-                    <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:500,color:C.text }}>{g.name}</div>
-                    <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11.5,color:C.textFaint }}>{g.phone||"No phone on file"}</div>
+                    <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13.5,fontWeight:500,color:C.text }}>{g.name}</div>
+                    <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11.5,color:g.phone?C.textFaint:C.red }}>
+                      {g.phone||"⚠ No phone number — won't be sent"}
+                    </div>
                   </div>
                   <StatusPill status={g.status}/>
                 </label>
@@ -426,8 +460,9 @@ function SendInvitesModal({ guests, onClose }) {
             </div>
             <div style={{ padding:"14px 24px",display:"flex",justifyContent:"flex-end",gap:10,borderTop:`1px solid ${C.creamBorder}` }}>
               <button onClick={onClose} style={{ padding:"9px 18px",background:"transparent",border:`1.5px solid ${C.creamBorder}`,borderRadius:3,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:500,color:C.textMid,cursor:"pointer" }}>Cancel</button>
-              <button onClick={handleSend} disabled={selected.size===0} style={{ padding:"9px 20px",background:selected.size>0?C.espresso:"#c0b8b0",border:"none",borderRadius:3,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",color:C.cream,cursor:selected.size>0?"pointer":"default" }}>
-                Send {selected.size} invite{selected.size!==1?"s":""}
+              <button onClick={handleSend} disabled={selected.size===0||sending}
+                style={{ padding:"9px 20px",background:selected.size>0&&!sending?C.espresso:"#c0b8b0",border:"none",borderRadius:3,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",color:C.cream,cursor:selected.size>0&&!sending?"pointer":"default" }}>
+                {sending?`Sending ${selected.size}…`:`Send ${selected.size} invite${selected.size!==1?"s":""}`}
               </button>
             </div>
           </>
@@ -700,7 +735,7 @@ function getDietaryGroups(guests) {
   });
   return Object.entries(map).sort((a, b) => b[1] - a[1]);
 }
-const TABS = ["Guest List","Analytics","Settings"];
+const TABS = ["Guest List","Live Conversations","Analytics","Settings"];
 
 function Dashboard({ userEmail, onLogout }) {
   const [tab,setTab]=useState("Guest List");
@@ -718,7 +753,55 @@ function Dashboard({ userEmail, onLogout }) {
   const [sortDir,setSortDir]=useState("asc");
   const [csvError,setCsvError]=useState("");
   const [importSuccess,setImportSuccess]=useState("");
+  const [inboxMessages,setInboxMessages]=useState([]);
+  const [inboxConfigured,setInboxConfigured]=useState(false);
+  const [lastPoll,setLastPoll]=useState(null);
+  const [sendingInvites,setSendingInvites]=useState(false);
+  const [sendResults,setSendResults]=useState(null);
   const fileRef=useRef(null);
+
+  // Poll inbox every 5 seconds when on Live Conversations tab
+  useEffect(()=>{
+    if (tab!=="Live Conversations") return;
+    function poll() {
+      fetch(`/api/inbox${lastPoll?`?since=${encodeURIComponent(lastPoll)}`:""}`)
+        .then(r=>r.json())
+        .then(data=>{
+          if (data.configured) setInboxConfigured(true);
+          if (data.messages?.length>0) {
+            setInboxMessages(prev=>{
+              const existing=new Set(prev.map(m=>m.timestamp));
+              const newMsgs=data.messages.filter(m=>!existing.has(m.timestamp));
+              if (newMsgs.length===0) return prev;
+              const merged=[...newMsgs,...prev].slice(0,200);
+              setLastPoll(merged[0].timestamp);
+              // Update guest statuses from incoming messages
+              newMsgs.forEach(m=>{
+                if (m.parsedStatus?.status&&m.parsedStatus.status!=="Pending") {
+                  setGuestsRaw(prev=>prev.map(g=>{
+                    const phone=g.phone?.replace(/\D/g,"");
+                    const from=m.from?.replace(/\D/g,"");
+                    if (!phone||!from||!phone.endsWith(from.slice(-10))&&!from.endsWith(phone.slice(-10))) return g;
+                    return {
+                      ...g,
+                      status:m.parsedStatus.status||g.status,
+                      events:m.parsedStatus.events!=="None"?m.parsedStatus.events:g.events,
+                      dietary:m.parsedStatus.dietary!=="None"?(normalizeDietary(m.parsedStatus.dietary)||g.dietary):g.dietary,
+                      plusOne:m.parsedStatus.plusOne!=="No"?m.parsedStatus.plusOne:g.plusOne,
+                    };
+                  }));
+                }
+              });
+              return merged;
+            });
+          }
+        })
+        .catch(()=>{});
+    }
+    poll();
+    const id=setInterval(poll,5000);
+    return ()=>clearInterval(id);
+  },[tab,lastPoll]);
 
   function setGuests(upd) { setGuestsRaw(prev=>{ const n=typeof upd==="function"?upd(prev):upd; save(userEmail,"guests",n); return n; }); }
   function setWedding(upd) { setWeddingRaw(prev=>{ const n=typeof upd==="function"?upd(prev):upd; save(userEmail,"wedding",n); return n; }); }
@@ -987,6 +1070,80 @@ function Dashboard({ userEmail, onLogout }) {
           </div>
         )}
 
+        {/* ── Live Conversations Tab ── */}
+        {tab==="Live Conversations"&&(
+          <div className="db-fade">
+            {!inboxConfigured ? (
+              <div className="db-card" style={{ padding:"48px 32px",textAlign:"center" }}>
+                <div style={{ fontSize:32,marginBottom:14 }}>📡</div>
+                <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:24,color:C.text,marginBottom:10 }}>Twilio not connected yet</div>
+                <p style={{ fontFamily:"'DM Sans',sans-serif",fontSize:14,color:C.textLight,lineHeight:1.7,maxWidth:520,margin:"0 auto 24px" }}>
+                  To receive real guest replies here, add your Twilio credentials to Vercel and point your Twilio webhook at <code style={{ background:C.creamMid,padding:"2px 8px",borderRadius:3,fontSize:13 }}>https://getfinalcount.com/api/sms-webhook</code>. Then guest replies will appear here in real time.
+                </p>
+                <div style={{ background:C.creamMid,border:`1px solid ${C.creamBorder}`,borderRadius:8,padding:"20px 24px",maxWidth:520,margin:"0 auto",textAlign:"left" }}>
+                  <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:C.textFaint,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:12 }}>Vercel environment variables needed</div>
+                  {[["TWILIO_ACCOUNT_SID","Your Account SID from twilio.com/console"],["TWILIO_AUTH_TOKEN","Your Auth Token from twilio.com/console"],["TWILIO_PHONE_NUMBER","Your Twilio number e.g. +12025551234"],["KV_REST_API_URL","From Vercel → Storage → Create KV database"],["KV_REST_API_TOKEN","From Vercel → Storage → Create KV database"]].map(([k,v])=>(
+                    <div key={k} style={{ marginBottom:10 }}>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12.5,fontWeight:600,color:C.text }}>{k}</div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.textFaint }}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : inboxMessages.length===0 ? (
+              <div className="db-card" style={{ padding:"56px 32px",textAlign:"center" }}>
+                <div style={{ fontSize:28,marginBottom:12 }}>🟢</div>
+                <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:22,color:C.text,marginBottom:8 }}>Connected — waiting for replies</div>
+                <p style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13.5,color:C.textLight,lineHeight:1.65 }}>
+                  This page polls every 5 seconds. When a guest replies to an RSVP text, their message and the AI response will appear here automatically.
+                </p>
+                <div style={{ display:"inline-flex",alignItems:"center",gap:8,marginTop:16,fontFamily:"'DM Sans',sans-serif",fontSize:12.5,color:C.textFaint }}>
+                  <div style={{ width:8,height:8,borderRadius:"50%",background:C.green,animation:"blink 1.5s infinite" }}/>
+                  Live · checking every 5 seconds
+                </div>
+              </div>
+            ) : (
+              <div style={{ display:"flex",flexDirection:"column",gap:12 }}>
+                <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4 }}>
+                  <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.textLight }}>{inboxMessages.length} conversation{inboxMessages.length!==1?"s":""} · live feed</div>
+                  <div style={{ display:"inline-flex",alignItems:"center",gap:6,fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.green,fontWeight:500 }}>
+                    <div style={{ width:7,height:7,borderRadius:"50%",background:C.green }}/>
+                    Live · updating automatically
+                  </div>
+                </div>
+                {inboxMessages.map((m,i)=>(
+                  <div key={i} className="db-card" style={{ padding:"18px 22px" }}>
+                    <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14,flexWrap:"wrap",gap:8 }}>
+                      <div>
+                        <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:18,fontWeight:500,color:C.text }}>{m.guestName||m.from}</div>
+                        <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11.5,color:C.textFaint,marginTop:2 }}>{m.from} · {new Date(m.timestamp).toLocaleString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div>
+                      </div>
+                      {m.parsedStatus&&<StatusPill status={m.parsedStatus.status}/>}
+                    </div>
+                    <div style={{ display:"flex",flexDirection:"column",gap:8,background:"#f9f6f0",borderRadius:8,padding:"14px" }}>
+                      <div style={{ display:"flex",gap:10,alignItems:"flex-start" }}>
+                        <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:C.textFaint,letterSpacing:"0.07em",textTransform:"uppercase",paddingTop:2,minWidth:44 }}>Guest</span>
+                        <div style={{ background:"#007AFF",color:"white",borderRadius:"16px 16px 4px 16px",padding:"8px 13px",fontSize:13.5,lineHeight:1.45,fontFamily:"-apple-system,sans-serif",maxWidth:"80%" }}>{m.message}</div>
+                      </div>
+                      <div style={{ display:"flex",gap:10,alignItems:"flex-start" }}>
+                        <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:C.textFaint,letterSpacing:"0.07em",textTransform:"uppercase",paddingTop:2,minWidth:44 }}>FC</span>
+                        <div style={{ background:"#E9E9EB",color:"#000",borderRadius:"16px 16px 16px 4px",padding:"8px 13px",fontSize:13.5,lineHeight:1.45,fontFamily:"-apple-system,sans-serif",maxWidth:"80%" }}>{m.reply}</div>
+                      </div>
+                    </div>
+                    {m.parsedStatus&&(m.parsedStatus.events!=="None"||m.parsedStatus.dietary!=="None"||m.parsedStatus.plusOne!=="No")&&(
+                      <div style={{ display:"flex",gap:12,marginTop:10,flexWrap:"wrap" }}>
+                        {m.parsedStatus.events!=="None"&&<span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.textLight }}>📅 {m.parsedStatus.events}</span>}
+                        {m.parsedStatus.dietary!=="None"&&<span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.textLight }}>🌿 {m.parsedStatus.dietary}</span>}
+                        {m.parsedStatus.plusOne!=="No"&&<span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.textLight }}>+1 {m.parsedStatus.plusOne}</span>}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── Analytics Tab ── */}
         {tab==="Analytics"&&(
           <div className="db-fade">
@@ -1042,7 +1199,7 @@ function Dashboard({ userEmail, onLogout }) {
       {/* Modals */}
       {showAdd&&<GuestModal initial={editGuest} events={wedding.events||[]} onSave={saveGuest} onCancel={()=>{setShowAdd(false);setEditGuest(null);}}/>}
       {simGuest&&<ConvoSimulator guest={simGuest} wedding={wedding} onClose={()=>setSimGuest(null)} onUpdateGuest={updated=>{updateGuestFromSim(updated);setSimGuest(null);}}/>}
-      {showSend&&<SendInvitesModal guests={guestsRaw} onClose={()=>setShowSend(false)}/>}
+      {showSend&&<SendInvitesModal guests={guestsRaw} wedding={wedding} onClose={()=>setShowSend(false)}/>}
 
       {/* Conversation log drawer */}
       {logGuest&&(
