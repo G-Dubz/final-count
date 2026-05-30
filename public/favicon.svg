@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Espresso background circle -->
+  <circle cx="16" cy="16" r="16" fill="#2a2118"/>
+  <!-- Diamond shape -->
+  <path d="M16 4 L28 16 L16 28 L4 16 Z" fill="none" stroke="#c9a97a" stroke-width="1.2" opacity="0.4"/>
+  <!-- F letterform -->
+  <line x1="10" y1="11" x2="10" y2="21" stroke="#faf8f4" stroke-width="2" stroke-linecap="round"/>
+  <line x1="10" y1="11" x2="18" y2="11" stroke="#faf8f4" stroke-width="2" stroke-linecap="round"/>
+  <line x1="10" y1="16" x2="16" y2="16" stroke="#faf8f4" stroke-width="2" stroke-linecap="round"/>
+  <!-- Gold checkmark -->
+  <polyline points="15,18 18,22 24,14" fill="none" stroke="#c9a97a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
