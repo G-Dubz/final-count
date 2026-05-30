@@ -1,33 +1,42 @@
 // pages/api/inbox.js
-// Dashboard polls this every 5 seconds to get new incoming messages.
-// Returns the latest messages from the KV inbox store.
+// Dashboard polls this every 5 seconds to get new incoming messages
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const since = req.query.since; // ISO timestamp — only return messages newer than this
+  const KV_URL   = process.env.KV_REST_API_URL;
+  const KV_TOKEN = process.env.KV_REST_API_TOKEN;
 
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-    // KV not configured — return empty so dashboard doesn't crash
+  if (!KV_URL || !KV_TOKEN) {
     return res.status(200).json({ messages: [], configured: false });
   }
 
   try {
-    const kvRes  = await fetch(`${process.env.KV_REST_API_URL}/get/fc_inbox`, {
-      headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` },
+    const r = await fetch(`${KV_URL}/get/fc_inbox`, {
+      headers: { Authorization: `Bearer ${KV_TOKEN}` },
     });
-    const kvData = await kvRes.json();
-    const inbox  = kvData.result ? JSON.parse(kvData.result) : [];
+    const d = await r.json();
 
+    // Upstash returns { result: "stringified JSON" } or { result: null }
+    let inbox = [];
+    if (d.result) {
+      try {
+        inbox = JSON.parse(d.result);
+      } catch {
+        inbox = [];
+      }
+    }
+
+    const since = req.query.since;
     const filtered = since
       ? inbox.filter(m => new Date(m.timestamp) > new Date(since))
       : inbox.slice(0, 50);
 
     return res.status(200).json({ messages: filtered, configured: true });
-  } catch (err) {
-    console.error("Inbox fetch error:", err);
-    return res.status(500).json({ error: "Failed to load inbox", messages: [] });
+  } catch(err) {
+    console.error("Inbox fetch error:", err.message);
+    return res.status(500).json({ error: err.message, messages: [], configured: true });
   }
 }
