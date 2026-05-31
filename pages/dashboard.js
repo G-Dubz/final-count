@@ -26,9 +26,49 @@ function save(email, suffix, data) {
 
 const DEFAULT_WEDDING = {
   bride:"", groom:"", date:"", venue:"", city:"",
+  // Structured events — each has full details
+  eventDetails: [
+    { id:1, name:"Rehearsal Dinner", date:"", startTime:"", endTime:"", venue:"", address:"", notes:"" },
+    { id:2, name:"Ceremony",         date:"", startTime:"", endTime:"", venue:"", address:"", notes:"" },
+    { id:3, name:"Reception",        date:"", startTime:"", endTime:"", venue:"", address:"", notes:"" },
+  ],
+  rsvpDeadline:"", contactName:"", contactPhone:"", dressCode:"",
+  tone:"warm", customOpening:"",
+  // Legacy field kept for backward compatibility with older code paths
   events:["Rehearsal Dinner","Ceremony","Reception"],
-  tone:"warm", customOpening:""
 };
+
+// Migrate older wedding objects (with flat events[]) to the new structured shape
+function migrateWedding(w) {
+  if (!w) return DEFAULT_WEDDING;
+  const merged = { ...DEFAULT_WEDDING, ...w };
+  // If no eventDetails but has legacy events list, build eventDetails from it
+  if ((!w.eventDetails || w.eventDetails.length === 0) && Array.isArray(w.events)) {
+    merged.eventDetails = w.events.map((name, i) => ({
+      id: i+1, name, date: w.date || "", startTime:"", endTime:"",
+      venue: w.venue || "", address:"", notes:"",
+    }));
+  }
+  // Keep legacy events[] in sync with eventDetails names
+  merged.events = (merged.eventDetails || []).map(e => e.name);
+  return merged;
+}
+
+// Format a time like "16:30" into "4:30 PM"
+function formatTime(t) {
+  if (!t) return "";
+  const [h, m] = t.split(":").map(Number);
+  if (isNaN(h)) return t;
+  const period = h >= 12 ? "PM" : "AM";
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}:${String(m).padStart(2,"0")} ${period}`;
+}
+
+// Format a date like "2027-02-17" into "February 17, 2027"
+function formatDate(d) {
+  if (!d) return "";
+  return new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric", year:"numeric" });
+}
 
 // ── Logo ──────────────────────────────────────────────────────────────────────
 function LogoMark({ size=32, dark=false }) {
@@ -577,17 +617,120 @@ function AnalyticsChart({ guests }) {
 }
 
 // ── Settings Page ─────────────────────────────────────────────────────────────
-function SettingsPage({ wedding, onSave }) {
-  const [w,setW]=useState({...DEFAULT_WEDDING,...wedding});
-  const [evtInput,setEvtInput]=useState("");
+// ── Event Details Page ────────────────────────────────────────────────────────
+function EventDetailsPage({ wedding, onSave }) {
+  const [w,setW]=useState(migrateWedding(wedding));
   const [saved,setSaved]=useState(false);
-  function addEvent() { if(!evtInput.trim()) return; setW(p=>({...p,events:[...p.events,evtInput.trim()]})); setEvtInput(""); }
-  function removeEvent(i) { setW(p=>({...p,events:p.events.filter((_,idx)=>idx!==i)})); }
-  function handleSave(e) { e.preventDefault(); onSave(w); setSaved(true); setTimeout(()=>setSaved(false),2000); }
 
-  const F=({label,children})=>(
+  function handleSave(e){ e.preventDefault(); const synced={...w,events:(w.eventDetails||[]).map(ev=>ev.name)}; onSave(synced); setSaved(true); setTimeout(()=>setSaved(false),2000); }
+
+  function updateEvent(id,field,value){ setW(p=>({...p,eventDetails:p.eventDetails.map(ev=>ev.id===id?{...ev,[field]:value}:ev)})); }
+  function addEvent(){ setW(p=>({...p,eventDetails:[...p.eventDetails,{id:Date.now(),name:"",date:"",startTime:"",endTime:"",venue:"",address:"",notes:""}]})); }
+  function removeEvent(id){ setW(p=>({...p,eventDetails:p.eventDetails.filter(ev=>ev.id!==id)})); }
+
+  const L=({children})=> <label style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:C.textFaint,letterSpacing:"0.09em",textTransform:"uppercase",display:"block",marginBottom:6 }}>{children}</label>;
+
+  return (
+    <div className="db-fade">
+      <div style={{ maxWidth:760 }}>
+        <h2 style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:26,fontWeight:400,color:C.text,marginBottom:6 }}>Event Details</h2>
+        <p style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13.5,color:C.textLight,marginBottom:28,lineHeight:1.6 }}>
+          Fill in the details for your wedding day and any related events. FinalCount shares this information with guests automatically when they ask about times, dates, or locations.
+        </p>
+
+        <form onSubmit={handleSave}>
+          {/* Couple + overall info card */}
+          <div style={{ background:"white",border:`1px solid ${C.creamBorder}`,borderRadius:10,padding:"24px",marginBottom:20 }}>
+            <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:19,fontWeight:500,color:C.text,marginBottom:18 }}>The Couple</div>
+            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16 }}>
+              <div><L>Partner 1 name</L><input className="db-input" value={w.bride} onChange={e=>setW(p=>({...p,bride:e.target.value}))} placeholder="John"/></div>
+              <div><L>Partner 2 name</L><input className="db-input" value={w.groom} onChange={e=>setW(p=>({...p,groom:e.target.value}))} placeholder="Kristie"/></div>
+            </div>
+            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:16 }}>
+              <div><L>Main wedding date</L><input className="db-input" type="date" value={w.date} onChange={e=>setW(p=>({...p,date:e.target.value}))}/></div>
+              <div><L>City / Region</L><input className="db-input" value={w.city} onChange={e=>setW(p=>({...p,city:e.target.value}))} placeholder="Kure Beach, NC"/></div>
+            </div>
+          </div>
+
+          {/* Per-event cards */}
+          <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:19,fontWeight:500,color:C.text,marginBottom:14 }}>Events</div>
+          <div style={{ display:"flex",flexDirection:"column",gap:16,marginBottom:16 }}>
+            {(w.eventDetails||[]).map((ev,idx)=>(
+              <div key={ev.id} style={{ background:"white",border:`1px solid ${C.creamBorder}`,borderRadius:10,padding:"22px",position:"relative" }}>
+                {/* Event number badge */}
+                <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18 }}>
+                  <div style={{ display:"flex",alignItems:"center",gap:10 }}>
+                    <div style={{ width:26,height:26,borderRadius:"50%",background:C.espresso,color:C.gold,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700 }}>{idx+1}</div>
+                    <input
+                      value={ev.name}
+                      onChange={e=>updateEvent(ev.id,"name",e.target.value)}
+                      placeholder="Event name (e.g. Ceremony)"
+                      style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:20,fontWeight:500,color:C.text,border:"none",borderBottom:`1.5px solid ${C.creamBorder}`,outline:"none",background:"transparent",padding:"2px 0",minWidth:260 }}
+                    />
+                  </div>
+                  {w.eventDetails.length>1&&(
+                    <button type="button" onClick={()=>removeEvent(ev.id)} style={{ background:"none",border:"none",cursor:"pointer",fontSize:13,color:C.red,fontFamily:"'DM Sans',sans-serif",fontWeight:500 }}>Remove</button>
+                  )}
+                </div>
+
+                <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:14 }}>
+                  <div><L>Date</L><input className="db-input" type="date" value={ev.date} onChange={e=>updateEvent(ev.id,"date",e.target.value)}/></div>
+                  <div><L>Start time</L><input className="db-input" type="time" value={ev.startTime} onChange={e=>updateEvent(ev.id,"startTime",e.target.value)}/></div>
+                  <div><L>End time</L><input className="db-input" type="time" value={ev.endTime} onChange={e=>updateEvent(ev.id,"endTime",e.target.value)}/></div>
+                </div>
+                <div style={{ marginBottom:14 }}>
+                  <L>Venue name</L>
+                  <input className="db-input" value={ev.venue} onChange={e=>updateEvent(ev.id,"venue",e.target.value)} placeholder="The Grand Pavilion"/>
+                </div>
+                <div style={{ marginBottom:14 }}>
+                  <L>Full address</L>
+                  <input className="db-input" value={ev.address} onChange={e=>updateEvent(ev.id,"address",e.target.value)} placeholder="123 Ocean Blvd, Kure Beach, NC 28449"/>
+                </div>
+                <div>
+                  <L>Notes for guests (optional)</L>
+                  <input className="db-input" value={ev.notes} onChange={e=>updateEvent(ev.id,"notes",e.target.value)} placeholder="e.g. Outdoor ceremony — bring sunglasses. Parking available on-site."/>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button type="button" onClick={addEvent} style={{ width:"100%",padding:"14px",background:"transparent",border:`1.5px dashed ${C.creamBorder}`,borderRadius:10,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,color:C.textLight,cursor:"pointer",marginBottom:20,transition:"all .18s" }}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor=C.gold;e.currentTarget.style.color=C.espresso;}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor=C.creamBorder;e.currentTarget.style.color=C.textLight;}}
+          >+ Add another event</button>
+
+          {/* Additional details card */}
+          <div style={{ background:"white",border:`1px solid ${C.creamBorder}`,borderRadius:10,padding:"24px",marginBottom:20 }}>
+            <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:19,fontWeight:500,color:C.text,marginBottom:18 }}>Additional Details</div>
+            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16 }}>
+              <div><L>RSVP deadline</L><input className="db-input" type="date" value={w.rsvpDeadline} onChange={e=>setW(p=>({...p,rsvpDeadline:e.target.value}))}/></div>
+              <div><L>Dress code</L><input className="db-input" value={w.dressCode} onChange={e=>setW(p=>({...p,dressCode:e.target.value}))} placeholder="Formal, Beach casual…"/></div>
+            </div>
+            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:16 }}>
+              <div><L>Contact name (for questions)</L><input className="db-input" value={w.contactName} onChange={e=>setW(p=>({...p,contactName:e.target.value}))} placeholder="Kristie"/></div>
+              <div><L>Contact phone (for questions)</L><input className="db-input" value={w.contactPhone} onChange={e=>setW(p=>({...p,contactPhone:e.target.value}))} placeholder="+1 555 000 0000"/></div>
+            </div>
+          </div>
+
+          <div style={{ display:"flex",justifyContent:"flex-end" }}>
+            <button type="submit" className="db-btn" style={{ minWidth:160 }}>{saved?"✓ Saved!":"Save event details"}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Settings Page (message tone, opening, deadline) ──────────────────────────
+function SettingsPage({ wedding, onSave }) {
+  const [w,setW]=useState(migrateWedding(wedding));
+  const [saved,setSaved]=useState(false);
+  function handleSave(e){ e.preventDefault(); onSave(w); setSaved(true); setTimeout(()=>setSaved(false),2000); }
+
+  const F=({label,hint,children})=>(
     <div style={{ display:"flex",flexDirection:"column",gap:7 }}>
       <label style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:C.textFaint,letterSpacing:"0.09em",textTransform:"uppercase" }}>{label}</label>
+      {hint&&<span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.textFaint,marginTop:-4,lineHeight:1.5 }}>{hint}</span>}
       {children}
     </div>
   );
@@ -595,34 +738,11 @@ function SettingsPage({ wedding, onSave }) {
   return (
     <div className="db-fade">
       <div style={{ maxWidth:640 }}>
-        <h2 style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:26,fontWeight:400,color:C.text,marginBottom:6 }}>Wedding Settings</h2>
-        <p style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13.5,color:C.textLight,marginBottom:28 }}>This information personalizes every message FinalCount sends to your guests.</p>
+        <h2 style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:26,fontWeight:400,color:C.text,marginBottom:6 }}>Message Settings</h2>
+        <p style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13.5,color:C.textLight,marginBottom:28,lineHeight:1.6 }}>Control how FinalCount sounds when it texts your guests. Event details like dates and venues are managed in the <strong>Event Details</strong> tab.</p>
         <form onSubmit={handleSave}>
-          <div style={{ background:"white",border:`1px solid ${C.creamBorder}`,borderRadius:10,padding:"24px",display:"flex",flexDirection:"column",gap:20 }}>
-            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:16 }}>
-              <F label="Partner 1 name"><input className="db-input" value={w.bride} onChange={e=>setW(p=>({...p,bride:e.target.value}))} placeholder="Sarah"/></F>
-              <F label="Partner 2 name"><input className="db-input" value={w.groom} onChange={e=>setW(p=>({...p,groom:e.target.value}))} placeholder="Michael"/></F>
-            </div>
-            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:16 }}>
-              <F label="Wedding date"><input className="db-input" type="date" value={w.date} onChange={e=>setW(p=>({...p,date:e.target.value}))}/></F>
-              <F label="Venue name"><input className="db-input" value={w.venue} onChange={e=>setW(p=>({...p,venue:e.target.value}))} placeholder="The Grand Pavilion"/></F>
-            </div>
-            <F label="City / Location"><input className="db-input" value={w.city} onChange={e=>setW(p=>({...p,city:e.target.value}))} placeholder="Charleston, SC"/></F>
-            <F label="Events (guests will be asked about each)">
-              <div style={{ display:"flex",flexWrap:"wrap",gap:8,marginBottom:8 }}>
-                {w.events.map((ev,i)=>(
-                  <div key={i} style={{ display:"flex",alignItems:"center",gap:6,background:C.creamMid,border:`1px solid ${C.creamBorder}`,borderRadius:20,padding:"4px 12px 4px 14px" }}>
-                    <span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.text }}>{ev}</span>
-                    <button type="button" onClick={()=>removeEvent(i)} style={{ background:"none",border:"none",cursor:"pointer",fontSize:13,color:C.textFaint,lineHeight:1,padding:"0 2px" }}>✕</button>
-                  </div>
-                ))}
-              </div>
-              <div style={{ display:"flex",gap:8 }}>
-                <input className="db-input" style={{ flex:1 }} value={evtInput} onChange={e=>setEvtInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();addEvent();}}} placeholder="Add event (e.g. Rehearsal Dinner)"/>
-                <button type="button" onClick={addEvent} style={{ padding:"10px 18px",background:C.espresso,color:C.cream,border:"none",borderRadius:3,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap" }}>+ Add</button>
-              </div>
-            </F>
-            <F label="Message tone">
+          <div style={{ background:"white",border:`1px solid ${C.creamBorder}`,borderRadius:10,padding:"24px",display:"flex",flexDirection:"column",gap:22 }}>
+            <F label="Message tone" hint="How should FinalCount's texts feel to your guests?">
               <select className="db-input" style={{ cursor:"pointer" }} value={w.tone} onChange={e=>setW(p=>({...p,tone:e.target.value}))}>
                 <option value="warm">Warm & friendly (recommended)</option>
                 <option value="formal">Formal & elegant</option>
@@ -630,8 +750,8 @@ function SettingsPage({ wedding, onSave }) {
                 <option value="fun">Playful & fun</option>
               </select>
             </F>
-            <F label="Custom opening message (optional)">
-              <textarea className="db-input" style={{ minHeight:80,resize:"vertical",lineHeight:1.5 }} value={w.customOpening} onChange={e=>setW(p=>({...p,customOpening:e.target.value}))} placeholder="Leave blank to use the AI-generated default. Or write your own opening text that FinalCount will use verbatim."/>
+            <F label="Custom opening message (optional)" hint="Leave blank to let FinalCount write a personalized opening for each guest. Or write your own that will be used word-for-word.">
+              <textarea className="db-input" style={{ minHeight:90,resize:"vertical",lineHeight:1.5 }} value={w.customOpening} onChange={e=>setW(p=>({...p,customOpening:e.target.value}))} placeholder="Hi! We're so excited to celebrate our wedding with you. Can you let us know if you'll be able to join us?"/>
             </F>
           </div>
           <div style={{ display:"flex",justifyContent:"flex-end",marginTop:16 }}>
@@ -741,12 +861,12 @@ function getDietaryGroups(guests) {
   });
   return Object.entries(map).sort((a, b) => b[1] - a[1]);
 }
-const TABS = ["Guest List","Live Conversations","Analytics","Settings"];
+const TABS = ["Guest List","Live Conversations","Event Details","Analytics","Settings"];
 
 function Dashboard({ userEmail, onLogout }) {
   const [tab,setTab]=useState("Guest List");
   const [guestsRaw,setGuestsRaw]=useState(()=>load(userEmail,"guests",[]));
-  const [wedding,setWeddingRaw]=useState(()=>load(userEmail,"wedding",DEFAULT_WEDDING));
+  const [wedding,setWeddingRaw]=useState(()=>migrateWedding(load(userEmail,"wedding",DEFAULT_WEDDING)));
   const [showAdd,setShowAdd]=useState(false);
   const [editGuest,setEditGuest]=useState(null);
   const [simGuest,setSimGuest]=useState(null);
@@ -1352,6 +1472,10 @@ function Dashboard({ userEmail, onLogout }) {
         )}
 
         {/* ── Settings Tab ── */}
+        {tab==="Event Details"&&(
+          <EventDetailsPage wedding={wedding} onSave={w=>{ setWedding(w); }}/>
+        )}
+
         {tab==="Settings"&&(
           <SettingsPage wedding={wedding} onSave={w=>{ setWedding(w); }}/>
         )}
