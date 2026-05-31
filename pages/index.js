@@ -505,7 +505,7 @@ export default function App() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         .sans { font-family: 'DM Sans', sans-serif; }
         .serif { font-family: 'Cormorant Garamond', Georgia, serif; }
-        .btn-dark { background:#2a2118; color:#faf8f4; padding:13px 30px; border-radius:2px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; border:none; cursor:pointer; transition:all .2s; display:inline-block; text-decoration:none; box-shadow:0 2px 8px rgba(0,0,0,.15); }
+        .btn-dark { background:#2a2118; color:#faf8f4; padding:13px 30px; border-radius:2px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; border:none; cursor:pointer; transition:all .2s; display:inline-flex; align-items:center; justify-content:center; text-decoration:none; box-shadow:0 2px 8px rgba(0,0,0,.15); line-height:1; }
         .btn-dark:hover { background:#3d3125; transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,0,0,.2); }
         .btn-outline { background:transparent; color:#2a2118; padding:12px 30px; border-radius:2px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; border:1.5px solid #2a2118; cursor:pointer; transition:all .2s; display:inline-block; text-decoration:none; }
         .btn-outline:hover { background:#2a2118; color:#faf8f4; }
@@ -752,7 +752,7 @@ export default function App() {
               >See it in action</a>
               <a
                 href="#waitlist"
-                style={{ background:"transparent", color:"#faf8f4", padding:"13px 30px", borderRadius:2, fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase", border:"1.5px solid rgba(255,255,255,0.55)", cursor:"pointer", textDecoration:"none", transition:"all .2s", display:"inline-block" }}
+                style={{ background:"transparent", color:"#faf8f4", padding:"13px 30px", borderRadius:2, fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase", border:"1.5px solid rgba(255,255,255,0.55)", cursor:"pointer", textDecoration:"none", transition:"all .2s", display:"inline-flex", alignItems:"center", justifyContent:"center", lineHeight:1 }}
                 onClick={e => { e.preventDefault(); document.getElementById("waitlist")?.scrollIntoView({ behavior:"smooth" }); }}
                 onMouseEnter={e => { e.currentTarget.style.background="rgba(255,255,255,0.12)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.8)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor="rgba(255,255,255,0.55)"; }}
