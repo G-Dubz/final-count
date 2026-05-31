@@ -566,9 +566,9 @@ export default function App() {
         .hero-mobile-brand { display: none; }
 
         @media (max-width: 768px) {
-          /* Nav — hide text links, keep logo + CTA */
-          .nav-links { display: none !important; }
-          .nav-inner { padding: 0 20px !important; }
+          /* Nav mobile — show stacked version, hide desktop version */
+          .nav-desktop { display: none !important; }
+          .nav-mobile { display: flex !important; }
 
           /* Hero — full bleed photo, text stacks at bottom, phone hidden */
           .hero-outer { min-height: 520px !important; }
@@ -634,8 +634,9 @@ export default function App() {
       `}</style>
 
       {/* ── NAV ── */}
-      <nav style={{ borderBottom:"1px solid #e0d4c4", padding:"0 40px", position:"sticky", top:0, background:"rgba(250,248,244,.96)", backdropFilter:"blur(8px)", zIndex:100 }}>
-        <div className="nav-inner" style={{ maxWidth:1120, margin:"0 auto", display:"flex", justifyContent:"space-between", alignItems:"center", height:68 }}>
+      <nav style={{ borderBottom:"1px solid #e0d4c4", position:"sticky", top:0, background:"rgba(250,248,244,.96)", backdropFilter:"blur(8px)", zIndex:100 }}>
+        {/* Desktop nav row */}
+        <div className="nav-inner nav-desktop" style={{ maxWidth:1120, margin:"0 auto", padding:"0 40px", display:"flex", justifyContent:"space-between", alignItems:"center", height:68 }}>
           <a
             href="#"
             onClick={e => { e.preventDefault(); window.scrollTo({ top:0, behavior:"smooth" }); }}
@@ -648,38 +649,48 @@ export default function App() {
           </a>
           <div className="nav-links sans" style={{ display:"flex", gap:32, fontSize:13, fontWeight:500, letterSpacing:"0.05em" }}>
             {[["how","How it works"],["demo","Live demo"],["pricing","Pricing"]].map(([id, label]) => (
-              <a
-                key={id}
-                href={`#${id}`}
-                className={`nav-link${activeSection === id ? " active" : ""}`}
-                onClick={e => {
-                  e.preventDefault();
-                  document.getElementById(id)?.scrollIntoView({ behavior:"smooth" });
-                }}
-              >
+              <a key={id} href={`#${id}`} className={`nav-link${activeSection === id ? " active" : ""}`}
+                onClick={e => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior:"smooth" }); }}>
                 {label}
               </a>
             ))}
           </div>
-          <a
-            href="#waitlist"
-            className="btn-dark"
-            style={{ padding:"10px 22px", fontSize:11 }}
-            onClick={e => {
-              e.preventDefault();
-              document.getElementById("waitlist")?.scrollIntoView({ behavior:"smooth" });
-            }}
-          >
-            Join Waitlist
-          </a>
-          <a
-            href="/dashboard"
-            style={{ padding:"10px 22px", fontSize:11, fontFamily:"'DM Sans',sans-serif", fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase", color:"#2a2118", textDecoration:"none", border:"1.5px solid #2a2118", borderRadius:2, transition:"all .2s" }}
-            onMouseEnter={e => { e.currentTarget.style.background="#2a2118"; e.currentTarget.style.color="#faf8f4"; }}
-            onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color="#2a2118"; }}
-          >
-            Log in
-          </a>
+          <div style={{ display:"flex", gap:10 }}>
+            <a href="#waitlist" className="btn-dark" style={{ padding:"10px 22px", fontSize:11 }}
+              onClick={e => { e.preventDefault(); document.getElementById("waitlist")?.scrollIntoView({ behavior:"smooth" }); }}>
+              Join Waitlist
+            </a>
+            <a href="/dashboard" style={{ padding:"10px 22px", fontSize:11, fontFamily:"'DM Sans',sans-serif", fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase", color:"#2a2118", textDecoration:"none", border:"1.5px solid #2a2118", borderRadius:2, transition:"all .2s", display:"inline-flex", alignItems:"center" }}
+              onMouseEnter={e => { e.currentTarget.style.background="#2a2118"; e.currentTarget.style.color="#faf8f4"; }}
+              onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color="#2a2118"; }}>
+              Log in
+            </a>
+          </div>
+        </div>
+
+        {/* Mobile nav — logo row + button row */}
+        <div className="nav-mobile" style={{ display:"none", flexDirection:"column" }}>
+          {/* Top row: logo centered */}
+          <div style={{ display:"flex", justifyContent:"center", alignItems:"center", padding:"12px 20px 10px" }}>
+            <a href="#" onClick={e => { e.preventDefault(); window.scrollTo({ top:0, behavior:"smooth" }); }}
+              style={{ textDecoration:"none", display:"flex", alignItems:"center", gap:9 }}>
+              <LogoMark size={32}/>
+              <span className="serif" style={{ fontSize:19, fontWeight:600, color:"#1a1410", letterSpacing:"0.01em" }}>
+                Final<span style={{ color:"#c9a97a" }}>Count</span>
+              </span>
+            </a>
+          </div>
+          {/* Bottom row: two full-width buttons */}
+          <div style={{ display:"flex", gap:0, borderTop:"1px solid #e0d4c4" }}>
+            <a href="#waitlist" onClick={e => { e.preventDefault(); document.getElementById("waitlist")?.scrollIntoView({ behavior:"smooth" }); }}
+              style={{ flex:1, padding:"11px 0", textAlign:"center", fontFamily:"'DM Sans',sans-serif", fontSize:11.5, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", color:"#faf8f4", textDecoration:"none", background:"#2a2118", borderRight:"1px solid rgba(255,255,255,.15)" }}>
+              Join Waitlist
+            </a>
+            <a href="/dashboard"
+              style={{ flex:1, padding:"11px 0", textAlign:"center", fontFamily:"'DM Sans',sans-serif", fontSize:11.5, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", color:"#2a2118", textDecoration:"none", background:"transparent" }}>
+              Log In
+            </a>
+          </div>
         </div>
       </nav>
 
