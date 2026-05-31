@@ -70,6 +70,18 @@ function formatDate(d) {
   return new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric", year:"numeric" });
 }
 
+// Format phone for display — strip +1 country code, format as (555) 649-3045
+function formatPhone(raw) {
+  if (!raw) return "—";
+  const digits = raw.replace(/\D/g, "");
+  // Strip leading 1 for US numbers
+  const local = digits.length === 11 && digits[0] === "1" ? digits.slice(1) : digits;
+  if (local.length === 10) {
+    return `(${local.slice(0,3)}) ${local.slice(3,6)}-${local.slice(6)}`;
+  }
+  return raw; // return original if not a standard US number
+}
+
 // ── Logo ──────────────────────────────────────────────────────────────────────
 function LogoMark({ size=32, dark=false }) {
   const bg=dark?C.gold:C.espresso, fg=dark?C.espressoDeep:C.cream, gld=dark?C.espressoDeep:C.gold;
@@ -1068,6 +1080,21 @@ function Dashboard({ userEmail, onLogout }) {
         .db-tr:last-child{border-bottom:none}
         .db-action{background:none;border:none;cursor:pointer;padding:5px 7px;border-radius:4px;font-size:13px;transition:all .15s}
         .db-action:hover{background:${C.creamMid}}
+        /* Notes tooltip */
+        .note-cell{position:relative;cursor:default;}
+        .note-cell .note-tip{
+          display:none;position:absolute;bottom:calc(100% + 6px);left:0;
+          background:${C.espresso};color:${C.cream};
+          padding:8px 12px;border-radius:6px;font-size:12.5px;line-height:1.55;
+          white-space:normal;width:260px;z-index:50;
+          box-shadow:0 4px 16px rgba(0,0,0,.22);
+          pointer-events:none;
+        }
+        .note-cell .note-tip::after{
+          content:'';position:absolute;top:100%;left:16px;
+          border:5px solid transparent;border-top-color:${C.espresso};
+        }
+        .note-cell:hover .note-tip{display:block;}
         .sim-btn{background:transparent;border:1.5px solid ${C.gold};color:${C.amber};padding:5px 11px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.04em;transition:all .18s;white-space:nowrap}
         .sim-btn:hover{background:${C.gold};color:${C.espressoDeep}}
         .th-btn{background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:${C.textFaint};letter-spacing:.08em;text-transform:uppercase;padding:0;white-space:nowrap;display:flex;align-items:center}
@@ -1231,15 +1258,20 @@ function Dashboard({ userEmail, onLogout }) {
                             </select>
                           </td>
                           <td style={{ padding:"12px 14px",color:C.textLight,fontSize:13 }}>{g.events||"—"}</td>
-                          <td style={{ padding:"12px 14px",color:C.textLight,fontSize:13 }}>{g.phone||"—"}</td>
+                          <td style={{ padding:"12px 14px",color:C.textLight,fontSize:13,whiteSpace:"nowrap" }}>{formatPhone(g.phone)}</td>
                           <td style={{ padding:"12px 14px",color:C.textLight,fontSize:13 }}>
                             <input style={{ width:80,padding:"4px 8px",border:`1px solid ${C.creamBorder}`,borderRadius:3,fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.text,background:"white",outline:"none" }}
                               value={g.plusOne||""} placeholder="—"
                               onChange={e=>setGuests(prev=>prev.map(x=>x.id===g.id?{...x,plusOne:e.target.value}:x))}/>
                           </td>
                           <td style={{ padding:"12px 14px",color:C.textLight,fontSize:13 }}>{g.dietary||"—"}</td>
-                          <td style={{ padding:"12px 14px",color:C.textLight,fontSize:13,maxWidth:140 }}>
-                            <span style={{ display:"block",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{g.notes||"—"}</span>
+                          <td style={{ padding:"12px 14px",color:C.textLight,fontSize:13,maxWidth:160 }}>
+                            {g.notes ? (
+                              <div className="note-cell">
+                                <span style={{ overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",display:"block",maxWidth:140 }}>{g.notes}</span>
+                                <div className="note-tip">{g.notes}</div>
+                              </div>
+                            ) : "—"}
                           </td>
                           <td style={{ padding:"12px 14px",whiteSpace:"nowrap" }}>
                             <div style={{ display:"flex",alignItems:"center",gap:5 }}>
