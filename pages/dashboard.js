@@ -724,8 +724,8 @@ function EventDetailsPage({ wedding, onSave }) {
             </div>
           </div>
 
-          <div style={{ display:"flex",justifyContent:"flex-end" }}>
-            <button type="submit" className="db-btn" style={{ minWidth:160 }}>{saved?"✓ Saved!":"Save event details"}</button>
+          <div className="db-save-btn-wrap" style={{ display:"flex",justifyContent:"center",marginTop:16 }}>
+            <button type="submit" className="db-btn" style={{ minWidth:220,padding:"14px 32px",fontSize:13 }}>{saved?"✓ Saved!":"Save event details"}</button>
           </div>
         </form>
       </div>
@@ -1123,6 +1123,9 @@ function Dashboard({ userEmail, onLogout }) {
           .db-convo-wrap { flex-direction: column !important; height: auto !important; }
           .db-convo-sidebar { width: 100% !important; border-right: none !important; border-bottom: 1px solid ${C.creamBorder} !important; max-height: 200px !important; overflow-y: auto !important; }
           .db-convo-thread { min-height: 400px !important; }
+          /* Save button full width on mobile */
+          .db-save-btn-wrap { justify-content: stretch !important; }
+          .db-save-btn-wrap button { width: 100% !important; }
         }
         .sim-btn{background:transparent;border:1.5px solid ${C.gold};color:${C.amber};padding:5px 11px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.04em;transition:all .18s;white-space:nowrap}
         .sim-btn:hover{background:${C.gold};color:${C.espressoDeep}}
