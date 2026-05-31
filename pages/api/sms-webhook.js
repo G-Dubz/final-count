@@ -82,35 +82,55 @@ export default async function handler(req, res) {
   // ── Generate AI response ──────────────────────────────────────────────────
   const firstName   = guestName.split(" ")[0] || "there";
   const coupleNames = [weddingContext?.bride, weddingContext?.groom].filter(Boolean).join(" & ") || "the couple";
-  const weddingDate = weddingContext?.date
-    ? new Date(weddingContext.date + "T12:00:00").toLocaleDateString("en-US", { month:"long", day:"numeric", year:"numeric" })
-    : "";
-  const events  = (weddingContext?.events || []).join(", ");
-  const venue   = weddingContext?.venue || "";
   const city    = weddingContext?.city  || "";
   const toneMap = { warm:"warm and friendly", formal:"professional and elegant", casual:"relaxed and conversational", fun:"playful and cheerful" };
   const toneDesc = toneMap[weddingContext?.tone || "warm"] || "warm and friendly";
 
-  // Build a full wedding details block so the AI can answer any question
-  const weddingDetails = [
+  // Time/date formatting helpers
+  function fmtTime(t){ if(!t) return ""; const [h,m]=t.split(":").map(Number); if(isNaN(h)) return t; const p=h>=12?"PM":"AM"; const h12=h%12===0?12:h%12; return `${h12}:${String(m).padStart(2,"0")} ${p}`; }
+  function fmtDate(d){ if(!d) return ""; return new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}); }
+
+  // Build a detailed per-event block from structured eventDetails
+  const eventDetails = weddingContext?.eventDetails || [];
+  let eventsBlock = "";
+  if (eventDetails.length > 0) {
+    eventsBlock = eventDetails.map((ev,i)=>{
+      const parts = [`${i+1}. ${ev.name || "Event"}`];
+      if (ev.date)      parts.push(`   Date: ${fmtDate(ev.date)}`);
+      if (ev.startTime) parts.push(`   Time: ${fmtTime(ev.startTime)}${ev.endTime?` – ${fmtTime(ev.endTime)}`:""}`);
+      if (ev.venue)     parts.push(`   Venue: ${ev.venue}`);
+      if (ev.address)   parts.push(`   Address: ${ev.address}`);
+      if (ev.notes)     parts.push(`   Notes: ${ev.notes}`);
+      return parts.join("\n");
+    }).join("\n\n");
+  }
+
+  const extraDetails = [
+    weddingContext?.rsvpDeadline ? `RSVP deadline: ${fmtDate(weddingContext.rsvpDeadline)}` : null,
+    weddingContext?.dressCode    ? `Dress code: ${weddingContext.dressCode}` : null,
+    weddingContext?.contactName  ? `Contact for questions: ${weddingContext.contactName}${weddingContext.contactPhone?` (${weddingContext.contactPhone})`:""}` : null,
+  ].filter(Boolean).join("\n");
+
+  const detailsBlock = [
     coupleNames ? `Couple: ${coupleNames}` : null,
-    weddingDate ? `Date: ${weddingDate}` : null,
-    venue       ? `Venue: ${venue}` : null,
-    city        ? `Location: ${city}` : null,
-    events      ? `Events: ${events}` : null,
+    city        ? `Region: ${city}` : null,
+    eventsBlock ? `\nEVENTS:\n${eventsBlock}` : null,
+    extraDetails ? `\nADDITIONAL INFO:\n${extraDetails}` : null,
   ].filter(Boolean).join("\n");
 
   const systemPrompt = `You are FinalCount, a ${toneDesc} AI wedding RSVP assistant texting guests on behalf of ${coupleNames}. You are currently texting their guest: ${guestName}.
 
-WEDDING DETAILS (use these to answer any questions the guest asks):
-${weddingDetails || "No wedding details provided yet."}
+=== FULL WEDDING INFORMATION ===
+${detailsBlock || "No wedding details provided yet."}
+=== END WEDDING INFORMATION ===
 
 YOUR JOB:
-- Collect RSVP information: attendance, which events, plus-ones, dietary needs
-- Answer any questions the guest has using the wedding details above
-- If asked about the venue or location, share it confidently — don't say you don't know
-- If a detail is genuinely missing (e.g. no venue saved), politely say the couple will be in touch with those details
-- Reply warmly and concisely — this is SMS, keep it under 160 characters when possible
+- Collect RSVP info: attendance, which events they'll attend, plus-ones, dietary needs
+- Answer questions using the wedding information above
+- IMPORTANT: If the guest asks about ANY of the time, date, OR location/venue, respond with ALL THREE together (date, time, and venue/address) for every relevant event — so they have complete, correct information in one message. For example: "The ceremony is Saturday, February 17, 2027 at 4:00 PM at The Grand Pavilion, 123 Ocean Blvd, Kure Beach, NC."
+- If there are multiple events and the guest doesn't specify which, give the details for all of them
+- If a specific detail is genuinely missing, say the couple will follow up with that detail — never make one up
+- Keep replies warm but clear. For detail-heavy answers it's fine to exceed 160 characters; otherwise stay concise
 - After your reply, on the very last line append JSON with no markdown:
 {"status":"Confirmed","events":"All events","dietary":"None","plusOne":"No"}
 
