@@ -1095,6 +1095,35 @@ function Dashboard({ userEmail, onLogout }) {
           border:5px solid transparent;border-top-color:${C.espresso};
         }
         .note-cell:hover .note-tip{display:block;}
+
+        /* ── Mobile dashboard ── */
+        @media (max-width: 768px) {
+          /* Nav — compress */
+          .db-nav-couple { display: none !important; }
+          .db-nav-email { display: none !important; }
+          .db-main-pad { padding: 16px !important; }
+          .db-header-row { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+          .db-header-btns { width: 100% !important; flex-wrap: wrap !important; }
+          .db-header-btns a, .db-header-btns button { flex: 1 1 auto !important; text-align: center !important; justify-content: center !important; font-size: 11px !important; padding: 9px 10px !important; }
+          /* Stats — 2x2 grid */
+          .db-stats-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+          .stat-card { padding: 14px 12px !important; }
+          /* Tabs — scroll horizontally */
+          .db-tabs { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; flex-wrap: nowrap !important; gap: 0 !important; padding-bottom: 0 !important; }
+          .db-tab { padding: 10px 14px !important; font-size: 12.5px !important; white-space: nowrap !important; }
+          /* Table — hide on mobile, show guest cards instead */
+          .db-table-wrap { display: none !important; }
+          .db-guest-cards { display: flex !important; }
+          /* Filters */
+          .db-filters { flex-direction: column !important; gap: 8px !important; }
+          .db-filters input, .db-filters select { width: 100% !important; max-width: 100% !important; }
+          /* Progress bar */
+          .db-progress-card { padding: 12px 14px !important; }
+          /* Live conversations — stack sidebar on top */
+          .db-convo-wrap { flex-direction: column !important; height: auto !important; }
+          .db-convo-sidebar { width: 100% !important; border-right: none !important; border-bottom: 1px solid ${C.creamBorder} !important; max-height: 200px !important; overflow-y: auto !important; }
+          .db-convo-thread { min-height: 400px !important; }
+        }
         .sim-btn{background:transparent;border:1.5px solid ${C.gold};color:${C.amber};padding:5px 11px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.04em;transition:all .18s;white-space:nowrap}
         .sim-btn:hover{background:${C.gold};color:${C.espressoDeep}}
         .th-btn{background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:${C.textFaint};letter-spacing:.08em;text-transform:uppercase;padding:0;white-space:nowrap;display:flex;align-items:center}
@@ -1114,23 +1143,23 @@ function Dashboard({ userEmail, onLogout }) {
       {/* Nav */}
       <nav style={{ background:C.espresso,padding:"0 28px",flexShrink:0 }}>
         <div style={{ maxWidth:1300,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",height:58 }}>
-          <div style={{ display:"flex",alignItems:"center",gap:12 }}>
+          <div style={{ display:"flex",alignItems:"center",gap:12,minWidth:0 }}>
             <LogoMark size={26} dark={true}/>
-            <span style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:17,fontWeight:600,color:C.goldLight }}>Final<span style={{ color:C.gold }}>Count</span></span>
-            <span style={{ width:1,height:16,background:"rgba(255,255,255,.2)",margin:"0 4px" }}/>
-            <span style={{ fontSize:11.5,color:"rgba(255,255,255,.5)",letterSpacing:"0.05em" }}>Couple's Dashboard</span>
+            <span style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:17,fontWeight:600,color:C.goldLight,flexShrink:0 }}>Final<span style={{ color:C.gold }}>Count</span></span>
+            <span className="db-nav-couple" style={{ width:1,height:16,background:"rgba(255,255,255,.2)",margin:"0 4px",flexShrink:0 }}/>
+            <span className="db-nav-couple" style={{ fontSize:11.5,color:"rgba(255,255,255,.5)",letterSpacing:"0.05em",whiteSpace:"nowrap" }}>Couple's Dashboard</span>
           </div>
-          <div style={{ display:"flex",alignItems:"center",gap:14 }}>
+          <div style={{ display:"flex",alignItems:"center",gap:10,flexShrink:0 }}>
             {(wedding.bride||wedding.groom)&&(
-              <span style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:14,color:"rgba(255,255,255,.6)",fontStyle:"italic" }}>
+              <span className="db-nav-couple" style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:14,color:"rgba(255,255,255,.6)",fontStyle:"italic",whiteSpace:"nowrap" }}>
                 {coupleNames}{weddingDate?` · ${weddingDate}`:""}
               </span>
             )}
-            <div style={{ width:26,height:26,borderRadius:"50%",background:"rgba(201,169,122,.22)",display:"flex",alignItems:"center",justifyContent:"center",border:"1px solid rgba(201,169,122,.35)" }}>
+            <div style={{ width:26,height:26,borderRadius:"50%",background:"rgba(201,169,122,.22)",display:"flex",alignItems:"center",justifyContent:"center",border:"1px solid rgba(201,169,122,.35)",flexShrink:0 }}>
               <span style={{ fontSize:11,fontWeight:600,color:C.gold }}>{userEmail[0].toUpperCase()}</span>
             </div>
-            <span style={{ fontSize:12,color:"rgba(255,255,255,.55)" }}>{userEmail}</span>
-            <button onClick={onLogout} style={{ background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.14)",color:"rgba(255,255,255,.7)",padding:"5px 13px",borderRadius:3,fontSize:11.5,fontWeight:500,cursor:"pointer",transition:"all .18s" }}
+            <span className="db-nav-email" style={{ fontSize:12,color:"rgba(255,255,255,.55)",whiteSpace:"nowrap" }}>{userEmail}</span>
+            <button onClick={onLogout} style={{ background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.14)",color:"rgba(255,255,255,.7)",padding:"5px 13px",borderRadius:3,fontSize:11.5,fontWeight:500,cursor:"pointer",transition:"all .18s",whiteSpace:"nowrap" }}
               onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,.16)"}
               onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,.08)"}
             >Sign out</button>
@@ -1138,20 +1167,20 @@ function Dashboard({ userEmail, onLogout }) {
         </div>
       </nav>
 
-      <div style={{ flex:1,maxWidth:1300,margin:"0 auto",width:"100%",padding:"28px 28px" }}>
+      <div className="db-main-pad" style={{ flex:1,maxWidth:1300,margin:"0 auto",width:"100%",padding:"28px 28px" }}>
 
         {/* Header row */}
-        <div className="db-fade" style={{ marginBottom:24,display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:14 }}>
+        <div className="db-fade db-header-row" style={{ marginBottom:24,display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:14 }}>
           <div>
             <h1 style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:32,fontWeight:400,color:C.text,marginBottom:3 }}>Your Wedding Dashboard</h1>
             <p style={{ fontSize:13,color:C.textLight }}>
               {(!wedding.bride&&!wedding.groom)
-                ? <span>Add your wedding details in <button onClick={()=>setTab("Settings")} style={{ background:"none",border:"none",cursor:"pointer",color:C.gold,fontFamily:"'DM Sans',sans-serif",fontSize:13,textDecoration:"underline",padding:0 }}>Settings</button> to personalize every message.</span>
+                ? <span>Add your wedding details in <button onClick={()=>setTab("Event Details")} style={{ background:"none",border:"none",cursor:"pointer",color:C.gold,fontFamily:"'DM Sans',sans-serif",fontSize:13,textDecoration:"underline",padding:0 }}>Event Details</button> to personalize every message.</span>
                 : `${coupleNames}${weddingDate?` · ${weddingDate}`:""}${wedding.venue?` · ${wedding.venue}`:""}`
               }
             </p>
           </div>
-          <div style={{ display:"flex",gap:10,flexWrap:"wrap",alignItems:"center" }}>
+          <div className="db-header-btns" style={{ display:"flex",gap:10,flexWrap:"wrap",alignItems:"center" }}>
             {importSuccess&&<span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12.5,color:C.green,fontWeight:500 }}>{importSuccess}</span>}
             {csvError&&<span style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12.5,color:C.red }}>{csvError}</span>}
             <button className="db-btn-ghost" onClick={()=>fileRef.current?.click()} style={{ fontSize:11.5 }}>📥 Import CSV</button>
@@ -1163,7 +1192,7 @@ function Dashboard({ userEmail, onLogout }) {
         </div>
 
         {/* Stat cards */}
-        <div className="db-fade" style={{ display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20 }}>
+        <div className="db-fade db-stats-grid" style={{ display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20 }}>
           {[["Total Guests",total,"👥",C.espresso],["Confirmed",confirmed,"✓",C.green],["Pending",pending,"◷",C.amber],["Declined",declined,"✕",C.red]].map(([l,v,ic,col])=>(
             <div key={l} className="stat-card">
               <div style={{ fontSize:10.5,fontWeight:600,color:C.textFaint,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8 }}>{l}</div>
@@ -1175,7 +1204,7 @@ function Dashboard({ userEmail, onLogout }) {
 
         {/* Progress bar */}
         {total>0&&(
-          <div className="db-card db-fade" style={{ padding:"14px 20px",marginBottom:18 }}>
+          <div className="db-card db-fade db-progress-card" style={{ padding:"14px 20px",marginBottom:18 }}>
             <div style={{ display:"flex",justifyContent:"space-between",marginBottom:7 }}>
               <span style={{ fontSize:11.5,fontWeight:600,color:C.textLight,letterSpacing:"0.06em",textTransform:"uppercase" }}>Response progress</span>
               <span style={{ fontSize:13,color:C.textLight }}>{total>0?Math.round(((confirmed+declined)/total)*100):0}% responded</span>
@@ -1195,7 +1224,7 @@ function Dashboard({ userEmail, onLogout }) {
         )}
 
         {/* Tabs */}
-        <div style={{ borderBottom:`1px solid ${C.creamBorder}`,marginBottom:20,display:"flex" }}>
+        <div className="db-tabs" style={{ borderBottom:`1px solid ${C.creamBorder}`,marginBottom:20,display:"flex" }}>
           {TABS.map(t=>(
             <button key={t} className={`db-tab${tab===t?" active":""}`} onClick={()=>setTab(t)}>{t}</button>
           ))}
@@ -1204,7 +1233,7 @@ function Dashboard({ userEmail, onLogout }) {
         {/* ── Guest List Tab ── */}
         {tab==="Guest List"&&(
           <div className="db-fade">
-            <div style={{ display:"flex",gap:10,marginBottom:14,flexWrap:"wrap",alignItems:"center" }}>
+            <div className="db-filters" style={{ display:"flex",gap:10,marginBottom:14,flexWrap:"wrap",alignItems:"center" }}>
               <input className="db-input" style={{ maxWidth:240 }} placeholder="Search by name or phone…" value={search} onChange={e=>setSearch(e.target.value)}/>
               <select className="db-select" value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}>
                 {["All","Confirmed","Pending","Declined"].map(s=><option key={s}>{s}</option>)}
@@ -1216,7 +1245,46 @@ function Dashboard({ userEmail, onLogout }) {
               <span style={{ fontSize:12,color:C.textFaint,marginLeft:"auto" }}>{filtered.length} of {total} guest{total!==1?"s":""}</span>
             </div>
 
-            <div className="db-card" style={{ overflow:"hidden" }}>
+            {/* Mobile guest cards — hidden on desktop */}
+            <div className="db-guest-cards" style={{ display:"none",flexDirection:"column",gap:10 }}>
+              {filtered.length===0?(
+                <div className="db-card" style={{ padding:"48px 20px",textAlign:"center" }}>
+                  <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:20,color:C.textFaint,marginBottom:8 }}>{total===0?"No guests yet":"No matches"}</div>
+                  {total===0&&<button className="db-btn" style={{ marginTop:12 }} onClick={()=>{setShowAdd(true);setEditGuest(null);}}>+ Add first guest</button>}
+                </div>
+              ):filtered.map(g=>(
+                <div key={g.id} className="db-card" style={{ padding:"16px" }}>
+                  <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12 }}>
+                    <div>
+                      <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:18,fontWeight:500,color:C.text }}>{g.name}</div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:12.5,color:C.textFaint,marginTop:2 }}>{formatPhone(g.phone)}</div>
+                    </div>
+                    <StatusPill status={g.status}/>
+                  </div>
+                  <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12 }}>
+                    {[["Events",g.events||"—"],["Dietary",g.dietary||"—"],["Plus-one",g.plusOne||"—"],["Notes",g.notes||"—"]].map(([lbl,val])=>(
+                      <div key={lbl}>
+                        <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:600,color:C.textFaint,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:2 }}>{lbl}</div>
+                        <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.text }}>{val}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display:"flex",gap:8,borderTop:`1px solid ${C.creamBorder}`,paddingTop:12,flexWrap:"wrap" }}>
+                    <select className="db-select" style={{ fontSize:12,padding:"6px 10px",flex:1 }} value={g.status}
+                      onChange={e=>setGuests(prev=>prev.map(x=>x.id===g.id?{...x,status:e.target.value}:x))}>
+                      <option>Pending</option><option>Confirmed</option><option>Declined</option>
+                    </select>
+                    <button className="sim-btn" onClick={()=>setSimGuest(g)} style={{ flex:1 }}>▶ Simulate</button>
+                    <button className="db-action" style={{ color:C.textMid }} onClick={()=>{setEditGuest(g);setShowAdd(true);}}>✎</button>
+                    <button className="db-action" style={{ color:g.log?.length>0?C.gold:C.textFaint }} onClick={()=>setLogGuest(g)}>💬</button>
+                    <button className="db-action" style={{ color:C.red }} onClick={()=>deleteGuest(g.id)}>✕</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table — hidden on mobile */}
+            <div className="db-table-wrap db-card" style={{ overflow:"hidden" }}>
               {filtered.length===0?(
                 <div style={{ padding:"56px 32px",textAlign:"center" }}>
                   <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:22,color:C.textFaint,marginBottom:10 }}>
@@ -1315,10 +1383,10 @@ function Dashboard({ userEmail, onLogout }) {
                 </div>
               </div>
             ) : (
-              <div style={{ display:"flex",height:620,background:"white",border:`1px solid ${C.creamBorder}`,borderRadius:12,overflow:"hidden",boxShadow:"0 4px 20px rgba(0,0,0,.06)" }}>
+              <div className="db-convo-wrap" style={{ display:"flex",height:620,background:"white",border:`1px solid ${C.creamBorder}`,borderRadius:12,overflow:"hidden",boxShadow:"0 4px 20px rgba(0,0,0,.06)" }}>
 
                 {/* ── Contact sidebar ── */}
-                <div style={{ width:280,borderRight:`1px solid ${C.creamBorder}`,display:"flex",flexDirection:"column",flexShrink:0 }}>
+                <div className="db-convo-sidebar" style={{ width:280,borderRight:`1px solid ${C.creamBorder}`,display:"flex",flexDirection:"column",flexShrink:0 }}>
                   {/* Sidebar header */}
                   <div style={{ padding:"16px 18px",borderBottom:`1px solid ${C.creamBorder}`,background:C.creamMid }}>
                     <div style={{ fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,color:C.textFaint,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:2 }}>Conversations</div>
@@ -1366,7 +1434,7 @@ function Dashboard({ userEmail, onLogout }) {
                 </div>
 
                 {/* ── Message thread panel ── */}
-                <div style={{ flex:1,display:"flex",flexDirection:"column",minWidth:0 }}>
+                <div className="db-convo-thread" style={{ flex:1,display:"flex",flexDirection:"column",minWidth:0 }}>
                   {activeThread ? (
                     <>
                       {/* Thread header — iMessage contact style */}
