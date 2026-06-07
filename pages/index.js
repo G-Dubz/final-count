@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
+import Link from "next/link";
 
 // ─── Logo mark as inline SVG component ───────────────────────────────────────
 function LogoMark({ size = 36, dark = false }) {
@@ -7,7 +8,6 @@ function LogoMark({ size = 36, dark = false }) {
   const fg = dark ? "#1e1a14" : "#faf8f4";
   const gold = dark ? "#1e1a14" : "#c9a97a";
   const s = size;
-  const h = s / 2;
   return (
     <svg width={s} height={s} viewBox="0 0 72 72" fill="none">
       <path d={`M36 2 L70 36 L36 70 L2 36 Z`} fill={bg}/>
@@ -83,7 +83,6 @@ function LiveDemo() {
 
   function scrollMsgs() { setTimeout(() => { if (msgsRef.current) msgsRef.current.scrollTop = 9999; }, 60); }
 
-  // Scroll the page so the target element is comfortably visible
   function scrollToEl(ref) {
     if (!ref?.current) return;
     const rect = ref.current.getBoundingClientRect();
@@ -107,37 +106,31 @@ function LiveDemo() {
     setSheetHighlight(false);
     setStats({ conf: 1, pend: 2, decl: 0 });
 
-    // Scroll to phone immediately so user can see the demo start
     after(() => { scrollToEl(phoneRef); }, 200);
 
-    // Step 1 — bot sends message
     after(() => {
       setChatMessages([{ sender: "bot", text: scenario.botPrompt }]);
       scrollMsgs();
     }, 600);
 
-    // Step 2 — guest replies
     after(() => {
       setDemoStep(2);
       setChatMessages(p => [...p, { sender: "user", text: scenario.userReply }]);
       scrollMsgs();
     }, 4800);
 
-    // Step 3 — AI typing
     after(() => {
       setDemoStep(3);
       setShowTyping(true);
       scrollMsgs();
     }, 9000);
 
-    // Step 3 — AI responds
     after(() => {
       setShowTyping(false);
       setChatMessages(p => [...p, { sender: "bot", text: scenario.botConfirm, delivered: true }]);
       scrollMsgs();
     }, 12000);
 
-    // Step 4 — spreadsheet updates
     after(() => {
       setDemoStep(4);
       setSheet(scenario.parsed);
@@ -147,11 +140,9 @@ function LiveDemo() {
         pend: scenario.parsed.status === "Pending" ? 2 : 1,
         decl: scenario.parsed.status === "Declined" ? 1 : 0
       });
-      // Scroll to spreadsheet so user sees it update
       after(() => { scrollToEl(sheetRef); }, 300);
     }, 14500);
 
-    // Cooldown
     after(() => {
       setSheetHighlight(false);
       setIsRunning(false);
@@ -233,35 +224,26 @@ function LiveDemo() {
         ))}
       </div>
 
-      {/* Main demo grid — phone constrained to iPhone width, sheet fills remaining space */}
+      {/* Main demo grid */}
       <div className="demo-grid" style={{ display:"grid", gridTemplateColumns:"320px minmax(0,1fr)", gap:48, alignItems:"start" }}>
 
-        {/* ── Phone column ── */}
+        {/* Phone column */}
         <div className="demo-phone-col" ref={phoneRef} style={{ position:"relative" }}>
           <div
             className={isRunning ? phoneFocused ? "d-spotlight-on" : "d-spotlight-dim" : "d-spotlight-idle"}
             style={{ borderRadius:36 }}
           >
-            {/* iPhone outer shell */}
             <div style={{ background:"#1a1a1c", borderRadius:50, padding:8, boxShadow:"0 24px 48px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.08)" }}>
-              {/* iPhone inner screen */}
               <div style={{ background:"white", borderRadius:42, overflow:"hidden", display:"flex", flexDirection:"column" }}>
 
-                {/* ── Status bar ── */}
                 <div style={{ background:"white", height:52, padding:"14px 20px 0", display:"flex", justifyContent:"space-between", alignItems:"flex-start", position:"relative" }}>
-                  {/* Time */}
                   <span style={{ fontFamily:"-apple-system,'SF Pro Text',sans-serif", fontSize:15, fontWeight:600, color:"black", lineHeight:1 }}>9:41</span>
-                  {/* Dynamic Island */}
                   <div style={{ position:"absolute", top:10, left:"50%", transform:"translateX(-50%)", width:88, height:26, background:"black", borderRadius:14 }}/>
-                  {/* Status icons */}
                   <span style={{ display:"flex", alignItems:"center", gap:5 }}>
-                    {/* Signal bars */}
                     <span style={{ display:"inline-flex", alignItems:"flex-end", height:10, gap:1.5 }}>
                       <span className="sig-bar" style={{ height:4 }}/><span className="sig-bar" style={{ height:6 }}/><span className="sig-bar" style={{ height:8 }}/><span className="sig-bar" style={{ height:10 }}/>
                     </span>
-                    {/* WiFi */}
                     <svg width="14" height="10" viewBox="0 0 16 11" fill="none"><path d="M8 0.5C5 0.5 2.2 1.8.4 3.6l1.1 1.3C3 3.3 5.4 2.3 8 2.3s5 1 6.5 2.6l1.1-1.3C13.8 1.8 11 .5 8 .5zm0 3C5.9 3.5 4 4.4 2.6 5.7l1.1 1.3c1.1-1 2.6-1.7 4.3-1.7s3.2.7 4.3 1.7l1.1-1.3C12 4.4 10.1 3.5 8 3.5zm0 3c-1.3 0-2.5.5-3.4 1.4L8 11l3.4-3.1c-.9-.9-2.1-1.4-3.4-1.4z" fill="black"/></svg>
-                    {/* Battery */}
                     <span style={{ display:"inline-flex", alignItems:"center" }}>
                       <span style={{ width:22, height:10, border:"1.5px solid rgba(0,0,0,.5)", borderRadius:2.5, padding:1.5, display:"inline-flex", alignItems:"center" }}>
                         <span style={{ display:"block", width:"78%", height:"100%", background:"black", borderRadius:1 }}/>
@@ -271,25 +253,20 @@ function LiveDemo() {
                   </span>
                 </div>
 
-                {/* ── iMessage nav bar — exact iOS layout ── */}
                 <div style={{ background:"white", padding:"4px 16px 10px", display:"grid", gridTemplateColumns:"40px 1fr 40px", alignItems:"center" }}>
-                  {/* Back chevron + unread count */}
                   <div style={{ display:"flex", alignItems:"center", gap:2 }}>
                     <svg width="10" height="17" viewBox="0 0 10 17" fill="none"><path d="M8.5 1.5L1.5 8.5L8.5 15.5" stroke="#007AFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     <span style={{ color:"#007AFF", fontSize:16, fontFamily:"-apple-system,sans-serif", fontWeight:400, lineHeight:1 }}>3</span>
                   </div>
-                  {/* Center: avatar + name — perfectly centered */}
                   <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
                     <div style={{ width:40, height:40, borderRadius:"50%", background:"linear-gradient(145deg,#d4b787,#9a7840)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:"white", letterSpacing:"-0.5px", fontFamily:"-apple-system,sans-serif" }}>FC</div>
                     <span style={{ fontSize:12, fontWeight:500, color:"#1c1c1e", fontFamily:"-apple-system,sans-serif", letterSpacing:"-0.1px" }}>FinalCount</span>
                   </div>
-                  {/* Video icon */}
                   <div style={{ display:"flex", justifyContent:"flex-end" }}>
                     <svg width="22" height="14" viewBox="0 0 22 14" fill="none"><rect x="0.5" y="0.5" width="14" height="13" rx="2.5" stroke="#007AFF" strokeWidth="1.5"/><path d="M15 4l6.5-3v12L15 10z" stroke="#007AFF" strokeWidth="1.5" strokeLinejoin="round"/></svg>
                   </div>
                 </div>
 
-                {/* ── Messages area ── */}
                 <div ref={msgsRef} style={{ background:"#f5f5f7", padding:"12px 12px", display:"flex", flexDirection:"column", gap:8, minHeight:340, maxHeight:340, overflowY:"auto" }}>
                   {chatMessages.length === 0 && !showTyping && (
                     <div style={{ textAlign:"center", padding:"100px 12px 0", color:"#8e8e93", fontSize:12.5, fontFamily:"-apple-system,sans-serif" }}>Pick a scenario above</div>
@@ -305,14 +282,12 @@ function LiveDemo() {
                   )}
                 </div>
 
-                {/* ── iMessage input bar ── */}
                 <div style={{ background:"white", padding:"8px 12px 10px", borderTop:"0.5px solid #d1d1d6", display:"flex", alignItems:"center", gap:8 }}>
                   <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" stroke="#007AFF" strokeWidth="1.5"/><path d="M9 14h10M14 9v10" stroke="#007AFF" strokeWidth="1.8" strokeLinecap="round"/></svg>
                   <div style={{ flex:1, background:"white", borderRadius:18, padding:"7px 12px", fontSize:13, color:"#8e8e93", border:"1px solid #c8c8cc", fontFamily:"-apple-system,sans-serif" }}>iMessage</div>
                   <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" fill="#007AFF"/><path d="M14 8v8M10 12l4-4 4 4" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </div>
 
-                {/* Home indicator */}
                 <div style={{ background:"white", padding:"6px 0 10px", display:"flex", justifyContent:"center" }}>
                   <div style={{ width:100, height:4, background:"black", borderRadius:3, opacity:.85 }}/>
                 </div>
@@ -321,7 +296,6 @@ function LiveDemo() {
             </div>
           </div>
 
-          {/* Callout: below the phone, arrow pointing UP at the messages */}
           {currentStep && phoneFocused && (
             <div className="callout-box arrow-up-left" style={{ marginTop:20, marginLeft:8 }}>
               <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
@@ -333,18 +307,17 @@ function LiveDemo() {
           )}
         </div>
 
-        {/* ── Sheet column ── */}
+        {/* Sheet column */}
         <div className="demo-sheet-col" ref={sheetRef} style={{ position:"relative" }}>
           <div
             className={isRunning ? sheetFocused ? "d-spotlight-on" : "d-spotlight-dim" : "d-spotlight-idle"}
             style={{ borderRadius:16 }}
           >
-            {/* Spreadsheet */}
             <div style={{ background:"white", borderRadius:10, border:"1.5px solid #c4b8a8", overflow:"hidden", boxShadow:"0 4px 20px rgba(0,0,0,.06)" }}>
               <div style={{ background:"#2a2118", color:"#f0ece6", padding:"12px 16px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                 <span style={{ fontSize:13, fontFamily:"'DM Sans',sans-serif", fontWeight:500 }}>Sarah & Mike — Guest list</span>
                 <span style={{ fontSize:11, display:"flex", alignItems:"center", gap:5, fontFamily:"'DM Sans',sans-serif" }}>
-                  <span id="sdot" style={{ width:6, height:6, borderRadius:"50%", background:"#c9a97a", display:"inline-block" }}/>
+                  <span style={{ width:6, height:6, borderRadius:"50%", background:"#c9a97a", display:"inline-block" }}/>
                   <span style={{ color:"#c9a97a", fontWeight:500 }}>Connected</span>
                 </span>
               </div>
@@ -384,7 +357,6 @@ function LiveDemo() {
               </div>
             </div>
 
-            {/* Stats */}
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginTop:12 }}>
               {[["Confirmed", stats.conf], ["Pending", stats.pend], ["Declined", stats.decl]].map(([label, val]) => (
                 <div key={label} style={{ background:"white", border:"1.5px solid #c4b8a8", borderRadius:8, padding:"12px 8px", textAlign:"center" }}>
@@ -394,9 +366,7 @@ function LiveDemo() {
               ))}
             </div>
           </div>
-          {/* end spotlight wrapper */}
 
-          {/* Callout: below the stats, arrow pointing UP at the spreadsheet */}
           {currentStep && sheetFocused && (
             <div className="callout-box arrow-up-right" style={{ marginTop:20, marginLeft:"auto", marginRight:8, maxWidth:260 }}>
               <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
@@ -428,9 +398,6 @@ export default function App() {
   const [submitError, setSubmitError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // ── Real Formspree submission ──────────────────────────────────────────────
-  // Replace the URL below with your own Formspree endpoint after signing up
-  // at formspree.io — it will look like: https://formspree.io/f/xabcdefg
   const FORMSPREE_ENDPOINT = "https://formspree.io/f/mvzybaez";
 
   async function handleWaitlistSubmit(e) {
@@ -456,6 +423,7 @@ export default function App() {
       setSubmitting(false);
     }
   }
+
   const [visible, setVisible] = useState({});
   const [activeSection, setActiveSection] = useState("hero");
   const refs = useRef({});
@@ -468,9 +436,8 @@ export default function App() {
     return () => obs.disconnect();
   }, []);
 
-  // Track which section is currently in view to highlight nav links
   useEffect(() => {
-    const sectionIds = ["how", "demo", "pricing", "waitlist"];
+    const sectionIds = ["demo", "pricing", "waitlist"];
     const observers = sectionIds.map(id => {
       const el = document.getElementById(id);
       if (!el) return null;
@@ -485,8 +452,6 @@ export default function App() {
   }, []);
 
   const addRef = id => el => { refs.current[id] = el; };
-  const fade = (id, delay = "0ms") =>
-    `transition: opacity .8s ${delay} ease, transform .8s ${delay} cubic-bezier(.16,1,.3,1); opacity: ${visible[id] ? 1 : 0}; transform: ${visible[id] ? "translateY(0)" : "translateY(28px)"}`;
 
   return (
     <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", background:"#faf8f4", color:"#1a1410", minHeight:"100vh", overflowX:"hidden" }}>
@@ -518,115 +483,52 @@ export default function App() {
         .step-num { width:48px; height:48px; border-radius:50%; background:#f2ead8; color:#6b4d1f; display:flex; align-items:center; justify-content:center; font-family:'Cormorant Garamond'; font-size:22px; font-weight:600; flex-shrink:0; }
         .feature-card { background:white; border:1.5px solid #e0d4c4; border-radius:8px; padding:28px 24px; transition:all .3s; }
         .feature-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,.08); border-color:#c9a97a; }
-
         @keyframes heroFadeUp { from{opacity:0;transform:translateY(32px)} to{opacity:1;transform:none} }
         @keyframes floatPhone { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-        @keyframes shimmer { 0%,100%{opacity:.6} 50%{opacity:1} }
         @keyframes countUp { from{opacity:0;transform:scale(.8)} to{opacity:1;transform:scale(1)} }
-
         .hero-text { animation: heroFadeUp .9s cubic-bezier(.16,1,.3,1) .1s both; }
         .hero-phone { animation: heroFadeUp .9s cubic-bezier(.16,1,.3,1) .3s both, floatPhone 6s ease-in-out 1.2s infinite; }
         .stat-num { animation: countUp .6s cubic-bezier(.16,1,.3,1) both; }
-
-        .gold-line { position:relative; }
-        .gold-line::after { content:''; position:absolute; bottom:-4px; left:0; width:100%; height:2px; background:linear-gradient(90deg,#c9a97a,transparent); }
-
-        /* ── Smooth scroll ── */
         html { scroll-behavior: smooth; }
-
-        /* ── Scroll offset for sticky nav (68px tall) ── */
-        section[id], div[id="waitlist"] {
-          scroll-margin-top: 80px;
-        }
-
-        /* ── Nav link hover + active states ── */
-        .nav-link {
-          color: #3d2e1e;
-          text-decoration: none;
-          position: relative;
-          padding-bottom: 2px;
-          transition: color .2s;
-        }
-        .nav-link::after {
-          content: '';
-          position: absolute;
-          bottom: -2px;
-          left: 0;
-          width: 0;
-          height: 1.5px;
-          background: #c9a97a;
-          transition: width .25s ease;
-        }
-        .nav-link:hover { color: #1a1410; }
-        .nav-link:hover::after { width: 100%; }
-        .nav-link.active { color: #1a1410; }
-        .nav-link.active::after { width: 100%; }
-
-        /* Hide mobile brand block on desktop — no longer used but kept for safety */
-        .hero-mobile-brand { display: none; }
+        section[id], div[id="waitlist"] { scroll-margin-top: 80px; }
+        .nav-link { color:#3d2e1e; text-decoration:none; position:relative; padding-bottom:2px; transition:color .2s; }
+        .nav-link::after { content:''; position:absolute; bottom:-2px; left:0; width:0; height:1.5px; background:#c9a97a; transition:width .25s ease; }
+        .nav-link:hover { color:#1a1410; }
+        .nav-link:hover::after { width:100%; }
+        .nav-link.active { color:#1a1410; }
+        .nav-link.active::after { width:100%; }
 
         @media (max-width: 768px) {
-          /* Nav mobile — show stacked version, hide desktop version */
           .nav-desktop { display: none !important; }
           .nav-mobile { display: flex !important; }
-
-          /* Hero — full bleed photo, text stacks at bottom, phone hidden */
           .hero-outer { min-height: 520px !important; }
           .hero-grid { grid-template-columns: 1fr !important; gap: 0 !important; padding: 48px 24px 52px !important; min-height: 520px !important; align-items: flex-end !important; }
           .hero-phone-wrap { display: none !important; }
           .hero-text h1 { font-size: 34px !important; }
           .hero-text p { font-size: 15px !important; max-width: 100% !important; }
-          .hero-stats-desktop { display: none !important; }
-          .hero-mobile-brand { display: none !important; }
-
-          /* Stat bar */
           .stat-grid { grid-template-columns: 1fr !important; gap: 20px !important; padding: 28px 20px !important; }
-
-          /* How it works */
           .how-section { padding: 60px 20px !important; }
-
-          /* Features grid — single column */
           .features-grid { grid-template-columns: 1fr !important; }
           .features-section { padding: 60px 20px !important; }
-
-          /* Demo section */
           .demo-section { padding: 60px 20px !important; }
           .demo-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
           .demo-phone-col { max-width: 340px !important; margin: 0 auto !important; width: 100% !important; }
           .demo-sheet-col { width: 100% !important; }
-
-          /* Demo buttons — wrap nicely */
           .demo-btns { justify-content: center !important; }
           .d-btn { font-size: 12px !important; padding: 10px 16px !important; }
-
-          /* Callout boxes — reposition for mobile */
-          .callout-box { position: static !important; transform: none !important; margin-top: 14px !important;
-            width: 100% !important; max-width: 100% !important; }
+          .callout-box { position: static !important; transform: none !important; margin-top: 14px !important; width: 100% !important; max-width: 100% !important; }
           .callout-box::before, .callout-box::after { display: none !important; }
-
-          /* Comparison — stack */
           .compare-grid { grid-template-columns: 1fr !important; }
           .compare-section { padding: 60px 20px !important; }
-
-          /* Testimonial */
           .testimonial-section { padding: 48px 20px !important; }
-
-          /* Pricing — single column, remove scale */
           .pricing-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
           .pricing-featured { transform: none !important; }
           .pricing-section { padding: 60px 20px !important; }
-
-          /* FAQ */
           .faq-section { padding: 60px 20px !important; }
           .faq-btn { font-size: 16px !important; }
-
-          /* Waitlist */
           .waitlist-section { padding: 60px 20px !important; }
-
-          /* Footer */
           .footer-inner { flex-direction: column !important; gap: 12px !important; text-align: center !important; padding: 24px 20px !important; }
         }
-
         @media (max-width: 480px) {
           .hero-text h1 { font-size: 32px !important; }
           .btn-dark, .btn-outline { padding: 12px 20px !important; font-size: 11px !important; }
@@ -635,7 +537,8 @@ export default function App() {
 
       {/* ── NAV ── */}
       <nav style={{ borderBottom:"1px solid #e0d4c4", position:"sticky", top:0, background:"rgba(250,248,244,.96)", backdropFilter:"blur(8px)", zIndex:100 }}>
-        {/* Desktop nav row */}
+
+        {/* Desktop nav */}
         <div className="nav-inner nav-desktop" style={{ maxWidth:1120, margin:"0 auto", padding:"0 40px", display:"flex", justifyContent:"space-between", alignItems:"center", height:68 }}>
           <a
             href="#"
@@ -647,20 +550,27 @@ export default function App() {
               Final<span style={{ color:"#c9a97a" }}>Count</span>
             </span>
           </a>
+
           <div className="nav-links sans" style={{ display:"flex", gap:32, fontSize:13, fontWeight:500, letterSpacing:"0.05em" }}>
-            {[["how","How it works"],["demo","Live demo"],["pricing","Pricing"]].map(([id, label]) => (
-              <a key={id} href={`#${id}`} className={`nav-link${activeSection === id ? " active" : ""}`}
-                onClick={e => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior:"smooth" }); }}>
-                {label}
-              </a>
-            ))}
+            {/* ── CHANGED: "How it works" now links to /how-it-works page ── */}
+            <Link href="/how-it-works" className="nav-link">How it works</Link>
+            <a href="#demo" className={`nav-link${activeSection === "demo" ? " active" : ""}`}
+              onClick={e => { e.preventDefault(); document.getElementById("demo")?.scrollIntoView({ behavior:"smooth" }); }}>
+              Live demo
+            </a>
+            <a href="#pricing" className={`nav-link${activeSection === "pricing" ? " active" : ""}`}
+              onClick={e => { e.preventDefault(); document.getElementById("pricing")?.scrollIntoView({ behavior:"smooth" }); }}>
+              Pricing
+            </a>
           </div>
+
           <div style={{ display:"flex", gap:10 }}>
             <a href="#waitlist" className="btn-dark" style={{ padding:"10px 22px", fontSize:11 }}
               onClick={e => { e.preventDefault(); document.getElementById("waitlist")?.scrollIntoView({ behavior:"smooth" }); }}>
               Join Waitlist
             </a>
-            <a href="/dashboard" style={{ padding:"10px 22px", fontSize:11, fontFamily:"'DM Sans',sans-serif", fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase", color:"#2a2118", textDecoration:"none", border:"1.5px solid #2a2118", borderRadius:2, transition:"all .2s", display:"inline-flex", alignItems:"center" }}
+            <a href="/dashboard"
+              style={{ padding:"10px 22px", fontSize:11, fontFamily:"'DM Sans',sans-serif", fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase", color:"#2a2118", textDecoration:"none", border:"1.5px solid #2a2118", borderRadius:2, transition:"all .2s", display:"inline-flex", alignItems:"center" }}
               onMouseEnter={e => { e.currentTarget.style.background="#2a2118"; e.currentTarget.style.color="#faf8f4"; }}
               onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color="#2a2118"; }}>
               Log in
@@ -668,9 +578,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Mobile nav — logo row + button row */}
+        {/* Mobile nav */}
         <div className="nav-mobile" style={{ display:"none", flexDirection:"column" }}>
-          {/* Top row: logo centered */}
           <div style={{ display:"flex", justifyContent:"center", alignItems:"center", padding:"12px 20px 10px" }}>
             <a href="#" onClick={e => { e.preventDefault(); window.scrollTo({ top:0, behavior:"smooth" }); }}
               style={{ textDecoration:"none", display:"flex", alignItems:"center", gap:9 }}>
@@ -680,14 +589,18 @@ export default function App() {
               </span>
             </a>
           </div>
-          {/* Bottom row: two full-width buttons */}
-          <div style={{ display:"flex", gap:0, borderTop:"1px solid #e0d4c4" }}>
+          {/* ── CHANGED: mobile nav now has 3 links including How it works ── */}
+          <div style={{ display:"flex", borderTop:"1px solid #e0d4c4" }}>
+            <Link href="/how-it-works"
+              style={{ flex:1, padding:"10px 0", textAlign:"center", fontFamily:"'DM Sans',sans-serif", fontSize:11, fontWeight:600, letterSpacing:"0.08em", textTransform:"uppercase", color:"#2a2118", textDecoration:"none", borderRight:"1px solid #e0d4c4" }}>
+              How it works
+            </Link>
             <a href="#waitlist" onClick={e => { e.preventDefault(); document.getElementById("waitlist")?.scrollIntoView({ behavior:"smooth" }); }}
-              style={{ flex:1, padding:"11px 0", textAlign:"center", fontFamily:"'DM Sans',sans-serif", fontSize:11.5, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", color:"#faf8f4", textDecoration:"none", background:"#2a2118", borderRight:"1px solid rgba(255,255,255,.15)" }}>
+              style={{ flex:1, padding:"10px 0", textAlign:"center", fontFamily:"'DM Sans',sans-serif", fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:"#faf8f4", textDecoration:"none", background:"#2a2118", borderRight:"1px solid rgba(255,255,255,.15)" }}>
               Join Waitlist
             </a>
             <a href="/dashboard"
-              style={{ flex:1, padding:"11px 0", textAlign:"center", fontFamily:"'DM Sans',sans-serif", fontSize:11.5, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", color:"#2a2118", textDecoration:"none", background:"transparent" }}>
+              style={{ flex:1, padding:"10px 0", textAlign:"center", fontFamily:"'DM Sans',sans-serif", fontSize:11, fontWeight:600, letterSpacing:"0.08em", textTransform:"uppercase", color:"#2a2118", textDecoration:"none" }}>
               Log In
             </a>
           </div>
@@ -695,37 +608,16 @@ export default function App() {
       </nav>
 
       {/* ── HERO ── */}
-      {/* Full-bleed cinematic hero — photo background with content overlay */}
       <section className="hero-outer" style={{ position:"relative", width:"100%", overflow:"hidden", minHeight:620 }}>
-
-        {/* Wedding photo */}
         <img
           src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=85&auto=format&fit=crop"
           alt="A couple celebrating their wedding"
           style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 25%" }}
         />
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(105deg, rgba(20,14,10,0.82) 0%, rgba(20,14,10,0.60) 45%, rgba(20,14,10,0.25) 100%)" }}/>
+        <div className="hero-grid" style={{ position:"relative", zIndex:2, maxWidth:1120, margin:"0 auto", padding:"80px 40px 72px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:64, alignItems:"center", minHeight:620 }}>
 
-        {/* Gradient overlay — left side darker for text readability, right stays lighter */}
-        <div style={{
-          position:"absolute", inset:0,
-          background:"linear-gradient(105deg, rgba(20,14,10,0.82) 0%, rgba(20,14,10,0.60) 45%, rgba(20,14,10,0.25) 100%)"
-        }}/>
-
-        {/* Content layer */}
-        <div className="hero-grid" style={{
-          position:"relative", zIndex:2,
-          maxWidth:1120, margin:"0 auto",
-          padding:"80px 40px 72px",
-          display:"grid",
-          gridTemplateColumns:"1fr 1fr",
-          gap:64,
-          alignItems:"center",
-          minHeight:620
-        }}>
-
-          {/* Left — logo mark + text + CTAs */}
           <div className="hero-text">
-            {/* Logo mark + wordmark inline */}
             <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:32 }}>
               <LogoMark size={44} dark={true}/>
               <div style={{ width:1, height:36, background:"rgba(201,169,122,0.4)" }}/>
@@ -733,25 +625,19 @@ export default function App() {
                 Wedding RSVP Intelligence
               </span>
             </div>
-
             <h1 className="serif" style={{ fontSize:"clamp(38px,4.5vw,60px)", fontWeight:400, lineHeight:1.1, marginBottom:20, color:"#faf8f4" }}>
               Stop chasing RSVPs.<br/>
               <em style={{ color:"#c9a97a", fontStyle:"italic" }}>Let AI get<br/>the final count.</em>
             </h1>
-
             <p className="sans" style={{ fontSize:16, color:"rgba(255,255,255,0.78)", lineHeight:1.75, maxWidth:400, marginBottom:36 }}>
               An intelligent text assistant that has real conversations with your guests, organizes every detail, and syncs everything to a Google Sheet — while you enjoy being engaged.
             </p>
-
             <div style={{ display:"flex", gap:14, flexWrap:"wrap" }}>
-              <a
-                href="#demo"
-                className="btn-dark"
-                style={{ background:"#c9a97a", color:"#1a1410", borderColor:"#c9a97a" }}
-                onClick={e => { e.preventDefault(); document.getElementById("demo")?.scrollIntoView({ behavior:"smooth" }); }}
-              >See it in action</a>
-              <a
-                href="#waitlist"
+              <a href="#demo" className="btn-dark" style={{ background:"#c9a97a", color:"#1a1410", borderColor:"#c9a97a" }}
+                onClick={e => { e.preventDefault(); document.getElementById("demo")?.scrollIntoView({ behavior:"smooth" }); }}>
+                See it in action
+              </a>
+              <a href="#waitlist"
                 style={{ background:"transparent", color:"#faf8f4", padding:"13px 30px", borderRadius:2, fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase", border:"1.5px solid rgba(255,255,255,0.55)", cursor:"pointer", textDecoration:"none", transition:"all .2s", display:"inline-flex", alignItems:"center", justifyContent:"center", lineHeight:1 }}
                 onClick={e => { e.preventDefault(); document.getElementById("waitlist")?.scrollIntoView({ behavior:"smooth" }); }}
                 onMouseEnter={e => { e.currentTarget.style.background="rgba(255,255,255,0.12)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.8)"; }}
@@ -760,17 +646,12 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right — floating phone */}
           <div className="hero-phone-wrap" style={{ display:"flex", justifyContent:"center", alignItems:"center" }}>
-            <div style={{
-              width:275, background:"#1a1a1c", borderRadius:44, padding:6,
-              boxShadow:"0 32px 72px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,0.06)"
-            }}>
+            <div style={{ width:275, background:"#1a1a1c", borderRadius:44, padding:6, boxShadow:"0 32px 72px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,0.06)" }}>
               <div style={{ background:"black", borderRadius:38, overflow:"hidden", position:"relative" }}>
                 <div style={{ position:"absolute", top:10, left:"50%", transform:"translateX(-50%)", width:88, height:24, background:"black", borderRadius:14, zIndex:10 }}/>
                 <div style={{ background:"#f5f5f7", padding:"30px 14px 8px", display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:13, fontWeight:600, color:"black", fontFamily:"-apple-system,sans-serif" }}>
-                  <span>9:41</span>
-                  <span style={{ fontSize:11 }}>●●●● 📶 87%</span>
+                  <span>9:41</span><span style={{ fontSize:11 }}>●●●● 📶 87%</span>
                 </div>
                 <div style={{ background:"#f5f5f7", padding:"8px 14px 12px", borderBottom:"0.5px solid #d1d1d6", display:"flex", alignItems:"center", gap:10 }}>
                   <span style={{ fontSize:18, color:"#007aff" }}>‹</span>
@@ -807,7 +688,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* ── HOW IT WORKS ── */}
+      {/* ── HOW IT WORKS (homepage teaser) ── */}
       <section id="how" className="how-section" style={{ maxWidth:880, margin:"0 auto", padding:"88px 40px" }}>
         <div ref={addRef("how")} data-id="how" style={{ opacity: visible["how"] ? 1 : 0, transform: visible["how"] ? "translateY(0)" : "translateY(28px)", transition:"opacity .8s ease, transform .8s cubic-bezier(.16,1,.3,1)" }}>
           <div style={{ textAlign:"center", marginBottom:60 }}>
@@ -834,6 +715,12 @@ export default function App() {
               </div>
             ))}
           </div>
+          {/* ── ADDED: link to the full How It Works page ── */}
+          <div style={{ textAlign:"center", marginTop:48 }}>
+            <Link href="/how-it-works" className="btn-outline">
+              See the full walkthrough →
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -854,9 +741,7 @@ export default function App() {
               ["Full conversation log","Read every exchange. Override any entry. You're always in control."],
             ].map(([title, desc]) => (
               <div key={title} className="feature-card">
-                <div style={{ width:36, height:36, marginBottom:14 }}>
-                  <LogoMark size={36}/>
-                </div>
+                <div style={{ width:36, height:36, marginBottom:14 }}><LogoMark size={36}/></div>
                 <h3 className="serif" style={{ fontSize:20, fontWeight:500, marginBottom:8, color:"#1a1410" }}>{title}</h3>
                 <p className="sans" style={{ fontSize:13.5, color:"#3d2e1e", lineHeight:1.65 }}>{desc}</p>
               </div>
@@ -927,7 +812,6 @@ export default function App() {
 
         <div className="pricing-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:20, alignItems:"stretch" }}>
 
-          {/* Tier 1 — Intimate */}
           <div style={{ border:"1.5px solid #c4b8a8", borderRadius:8, overflow:"hidden", display:"flex", flexDirection:"column" }}>
             <div style={{ background:"#f7f3ec", padding:"28px 32px", textAlign:"left" }}>
               <div className="sans" style={{ fontSize:10, letterSpacing:"0.14em", textTransform:"uppercase", color:"#8a7a6a", marginBottom:10, fontWeight:600 }}>The Intimate Wedding</div>
@@ -949,7 +833,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Tier 2 — The Grand Affair (featured) */}
           <div className="pricing-featured" style={{ border:"2px solid #2a2118", borderRadius:8, overflow:"hidden", display:"flex", flexDirection:"column", position:"relative", transform:"scale(1.03)", boxShadow:"0 12px 40px rgba(0,0,0,.14)" }}>
             <div style={{ position:"absolute", top:0, left:0, right:0, background:"#c9a97a", padding:"6px 0", textAlign:"center" }}>
               <span className="sans" style={{ fontSize:10.5, fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase", color:"#1a1410" }}>Most Popular</span>
@@ -975,7 +858,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Tier 3 — The Extravaganza */}
           <div style={{ border:"1.5px solid #c4b8a8", borderRadius:8, overflow:"hidden", display:"flex", flexDirection:"column" }}>
             <div style={{ background:"#f7f3ec", padding:"28px 32px", textAlign:"left" }}>
               <div className="sans" style={{ fontSize:10, letterSpacing:"0.14em", textTransform:"uppercase", color:"#8a7a6a", marginBottom:10, fontWeight:600 }}>The Extravaganza</div>
