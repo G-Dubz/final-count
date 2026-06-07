@@ -18,17 +18,20 @@ const C = {
   textFaint:   "#8a7a6a",
 };
 
-// ── Logo mark (diamond + FC) ──────────────────────────────────────────────────
-function LogoMark({ size = 32, dark = false }) {
-  const bg   = dark ? C.gold        : C.espresso;
-  const fg   = dark ? C.espressoDeep: C.cream;
-  const gold = dark ? C.espressoDeep: C.gold;
+// ── Logo mark (matches homepage exactly) ──────────────────────────────────────
+function LogoMark({ size = 36, dark = false }) {
+  const bg   = dark ? "#c9a97a" : "#2a2118";
+  const fg   = dark ? "#1e1a14" : "#faf8f4";
+  const gold = dark ? "#1e1a14" : "#c9a97a";
+  const s = size;
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="32" height="32" rx="4" fill={bg}/>
-      <polygon points="16,4 28,16 16,28 4,16" fill={gold} opacity="0.9"/>
-      <text x="16" y="20.5" textAnchor="middle" fontFamily="'DM Sans',sans-serif"
-            fontSize="8" fontWeight="700" fill={fg} letterSpacing="0.5">FC</text>
+    <svg width={s} height={s} viewBox="0 0 72 72" fill="none">
+      <path d="M36 2 L70 36 L36 70 L2 36 Z" fill={bg}/>
+      <path d="M36 10 L62 36 L36 62 L10 36 Z" fill="none" stroke={gold} strokeWidth="1.5" opacity="0.3"/>
+      <line x1="22" y1="24" x2="22" y2="48" stroke={fg} strokeWidth="3" strokeLinecap="round"/>
+      <line x1="22" y1="24" x2="38" y2="24" stroke={fg} strokeWidth="3" strokeLinecap="round"/>
+      <line x1="22" y1="34" x2="34" y2="34" stroke={fg} strokeWidth="3" strokeLinecap="round"/>
+      <polyline points="32,40 39,49 52,30" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
@@ -217,11 +220,11 @@ function StepVisual({ type }) {
           <span>Guest Name</span><span>Phone</span><span>Events</span>
         </div>
         {[
-          ["Margaret & Tom Liu",   "+1 (843) 555-0182", "All"],
-          ["Uncle Dave",           "+1 (704) 555-0291", "—"],
-          ["Cousin Marcus",        "+1 (919) 555-0374", "—"],
-          ["Grandma Helen",        "+1 (252) 555-0415", "All"],
-          ["Bridesmaid Claire",    "+1 (910) 555-0538", "—"],
+          ["Margaret & Tom Liu",   "(843) 555-0182", "All"],
+          ["Uncle Dave",           "(704) 555-0291", "—"],
+          ["Cousin Marcus",        "(919) 555-0374", "—"],
+          ["Grandma Helen",        "(252) 555-0415", "All"],
+          ["Bridesmaid Claire",    "(910) 555-0538", "—"],
         ].map(([name, phone, events], i) => (
           <div key={i} style={{ display:"grid", gridTemplateColumns:"2fr 1.2fr 1fr",
                                 padding:"9px 14px",
@@ -261,7 +264,7 @@ function StepVisual({ type }) {
           </div>
           <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:600,
                         color:"#fff", fontSize:13 }}>FinalCount</div>
-          <div style={{ color:C.goldLight, fontSize:10.5, opacity:.7 }}>+1 (866) 477-9638</div>
+          <div style={{ color:C.goldLight, fontSize:10.5, opacity:.7 }}>(866) 477-9638</div>
         </div>
         {/* bubble */}
         <div style={{ background:"rgba(255,255,255,.1)", borderRadius:"16px 16px 4px 16px",
@@ -390,7 +393,7 @@ function StepVisual({ type }) {
           <div style={{ fontFamily:"'Playfair Display',Georgia,serif",
                         fontStyle:"italic", fontSize:15, color:"#3a2f24",
                         letterSpacing:"0.5px", marginBottom:7 }}>
-            +1 (866) 477-9638
+            (866) 477-9638
           </div>
           <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300,
                         fontSize:7, letterSpacing:"0.3px", color:"#b0a090",
@@ -783,7 +786,7 @@ export default function HowItWorksPage() {
                 <div style={{ fontFamily:"'Playfair Display',Georgia,serif",
                               fontStyle:"italic", fontSize:12.5, color:"#3a2f24",
                               letterSpacing:"0.3px", marginBottom:6 }}>
-                  +1 (866) 477-9638
+                  (866) 477-9638
                 </div>
                 <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300,
                               fontSize:6, letterSpacing:"0.2px", color:"#b0a090",
